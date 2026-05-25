@@ -29,6 +29,7 @@
         min-height: 100vh;
         font-family: Georgia, "Times New Roman", serif;
         color: var(--ink);
+        -webkit-text-size-adjust: 100%;
         background:
           radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.92) 0 2px, transparent 3px),
           radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.65) 0 1px, transparent 2px),
@@ -406,9 +407,30 @@
         .card {
           min-height: auto;
         }
+
+        .share-panel {
+          align-items: stretch;
+        }
       }
 
       @media (max-width: 560px) {
+        main {
+          width: 100%;
+          padding: 0;
+        }
+
+        .shell {
+          gap: 0;
+        }
+
+        .intro,
+        .calculator {
+          border-right: 0;
+          border-left: 0;
+          border-radius: 0;
+          box-shadow: none;
+        }
+
         .controls {
           grid-template-columns: 1fr;
         }
@@ -423,9 +445,99 @@
           font-size: 3rem;
         }
 
+        .intro p {
+          margin-top: 18px;
+          font-size: 1rem;
+        }
+
+        .dough-mark {
+          width: 180px;
+          margin: 20px auto 0;
+        }
+
+        .formula {
+          margin-top: 20px;
+          padding-top: 18px;
+        }
+
         label span {
           display: grid;
           gap: 3px;
+        }
+
+        input {
+          min-height: 50px;
+          font-size: 1.35rem;
+        }
+
+        .mode-picker {
+          padding: 18px;
+        }
+
+        .mode-picker span {
+          min-height: 46px;
+        }
+
+        .share-panel {
+          display: grid;
+          padding: 16px 18px;
+        }
+
+        .share-panel button {
+          width: 100%;
+        }
+
+        .results {
+          gap: 8px;
+          padding: 8px 0;
+          background: rgba(213, 182, 144, 0.35);
+        }
+
+        .card {
+          gap: 12px;
+          border-top: 1px solid rgba(125, 87, 48, 0.18);
+          border-bottom: 1px solid rgba(125, 87, 48, 0.18);
+        }
+
+        .line-item {
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 10px;
+          padding-bottom: 11px;
+        }
+
+        .line-item strong {
+          font-size: 1.32rem;
+        }
+
+        .footnote {
+          margin: 14px 18px 20px;
+        }
+      }
+
+      @media (max-width: 390px) {
+        .intro,
+        label,
+        .card,
+        .mode-picker {
+          padding-right: 14px;
+          padding-left: 14px;
+        }
+
+        h1 {
+          font-size: 2.55rem;
+        }
+
+        .eyebrow {
+          letter-spacing: 0.08em;
+        }
+
+        .formula span,
+        .line-item {
+          font-size: 0.94rem;
+        }
+
+        .line-item strong {
+          font-size: 1.22rem;
         }
       }
     </style>
