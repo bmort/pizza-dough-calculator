@@ -516,6 +516,60 @@
   .headline .stat.accent .v{ color: var(--accent-ink); }
   .headline .stat.sage .v{ color: var(--sage-ink); }
 
+  /* Hydration tweaks indicator */
+  .tweaks-strip{
+    margin: 4px 20px 0;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    border: 1px solid var(--rule-soft);
+    display:grid;
+    grid-template-columns: auto 1fr 1fr;
+    align-items:center;
+    gap: 14px;
+  }
+  .tweaks-strip .ts-head{
+    display:flex; flex-direction:column; gap:2px;
+    padding-right: 14px;
+    border-right: 1px dashed var(--rule);
+  }
+  .tweaks-strip .ts-head .name{
+    font-family:"Instrument Serif", Georgia, serif;
+    font-size: 18px; line-height: 1;
+  }
+  .tweaks-strip .ts-head .tag{
+    font-size: 10.5px; letter-spacing:.14em; text-transform: uppercase;
+    color: var(--muted); font-weight:600;
+  }
+  .tweaks-strip .ts-item{
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .tweaks-strip .ts-item .k{
+    font-size: 11px; letter-spacing:.12em; text-transform: uppercase;
+    color: var(--muted); font-weight:600;
+  }
+  .tweaks-strip .ts-item .v{
+    font-family:"Geist Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 18px; font-weight: 600; color: var(--ink);
+  }
+  .tweaks-strip .ts-item .v .delta{
+    color: var(--muted); font-weight: 500;
+    font-size: 13px; margin-left: 6px;
+  }
+  @media (max-width: 520px){
+    .tweaks-strip{
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 14px;
+    }
+    .tweaks-strip .ts-head{
+      grid-column: 1 / -1;
+      border-right: 0;
+      border-bottom: 1px dashed var(--rule);
+      padding: 0 0 10px;
+    }
+  }
+
   /* Footnote */
   .footnote{
     padding: 14px 20px 20px;
@@ -575,6 +629,7 @@
     display:inline-flex; align-items:center; gap:8px;
     transition: background var(--t), color var(--t), transform var(--t);
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   .actions .btn-ghost{
     background: transparent;
@@ -1004,9 +1059,33 @@
           </div>
         </div>
 
+        <div class="tweaks-strip" aria-label="Hydration adjustment guide">
+          <div class="ts-head">
+            <span class="name">Hydration tweaks</span>
+            <span class="tag">per ±1% / ±5%</span>
+          </div>
+          <div class="ts-item">
+            <span class="k">Water</span>
+            <span class="v"><span id="tweakWater1">6g</span><span class="delta">/ <span id="tweakWater5">30g</span></span></span>
+          </div>
+          <div class="ts-item">
+            <span class="k">Flour</span>
+            <span class="v"><span id="tweakFlour1">9g</span><span class="delta">/ <span id="tweakFlour5">46g</span></span></span>
+          </div>
+        </div>
+
         <p class="footnote">
           Because the poolish is 100% hydration, half of its weight counts as flour and half
-          as water. Yeast suggestion is for a 12–16h cool ferment — adjust to room temperature.
+          as water. The yeast figure above is for the <strong>poolish</strong> only — sized
+          for a 12–16h cool ferment; reduce a little if fermenting at room temperature.
+          <br><br>
+          <strong>Same-day, no poolish?</strong> Skip the pre-ferment and add instant yeast
+          straight to the final dough: <strong><span id="sameDayYeast4">2.4g</span></strong>
+          for a 4–6h rise at room temp (≈0.3% of total flour), or
+          <strong><span id="sameDayYeast2">4.8g</span></strong> for a quicker 2–3h rise
+          (≈0.6%). Halve these for active dry yeast, triple for fresh.
+          <br><br>
+          Hydration tweaks: add water to raise hydration, or flour to lower it (totals shift).
         </p>
       </section>
     </div>
@@ -1283,6 +1362,26 @@ function calculate(){
   tweenNumber(document.getElementById("saltAmount"), salt);
   tweenNumber(document.getElementById("flourPct"), totalFlour / target * 100, "%");
   tweenNumber(document.getElementById("waterPct"), totalWater / target * 100, "%");
+
+  // Hydration tweak indicator:
+  //  - add water  ΔW = flour × ΔH/100  to raise hydration by ΔH
+  //  - add flour  Δf = water/(H-ΔH/100) - flour  to lower hydration by ΔH
+  const tweakWater1 = totalFlour * 0.01;
+  const tweakWater5 = totalFlour * 0.05;
+  const flourFor = dh => {
+    const newH = H - dh;
+    return newH > 0 ? totalWater / newH - totalFlour : NaN;
+  };
+  const tweakFlour1 = flourFor(0.01);
+  const tweakFlour5 = flourFor(0.05);
+  tweenNumber(document.getElementById("tweakWater1"), tweakWater1);
+  tweenNumber(document.getElementById("tweakWater5"), tweakWater5);
+  tweenNumber(document.getElementById("tweakFlour1"), isFinite(tweakFlour1) ? tweakFlour1 : 0);
+  tweenNumber(document.getElementById("tweakFlour5"), isFinite(tweakFlour5) ? tweakFlour5 : 0);
+
+  // Same-day instant yeast suggestions (% of total flour weight)
+  tweenNumber(document.getElementById("sameDayYeast4"), totalFlour * 0.003);
+  tweenNumber(document.getElementById("sameDayYeast2"), totalFlour * 0.006);
 
   tweenNumber(document.getElementById("poolishFlour"), poolFlour);
   tweenNumber(document.getElementById("poolishWater"), poolWater);
