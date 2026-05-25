@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pizza Dough Calculator</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #252019;
+        --muted: #6d6257;
+        --paper: #fffaf0;
+        --panel: #fff4dc;
+        --panel-strong: #f3dcc0;
+        --line: #d5b690;
+        --accent: #b53624;
+        --accent-dark: #7d2419;
+        --basil: #2f704d;
+        --flour: #fffdf7;
+        --shadow: 0 22px 60px rgba(79, 49, 24, 0.18);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.92) 0 2px, transparent 3px),
+          radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.65) 0 1px, transparent 2px),
+          linear-gradient(135deg, #ead0ac 0%, #f6e5c7 48%, #e2bd8f 100%);
+        background-size: 42px 42px, 34px 34px, 100% 100%;
+      }
+
+      main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 34px 0;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .intro,
+      .calculator,
+      .card,
+      .notice {
+        border: 1px solid rgba(125, 87, 48, 0.24);
+        box-shadow: var(--shadow);
+      }
+
+      .intro {
+        min-height: 100%;
+        padding: 28px;
+        border-radius: 8px;
+        background:
+          linear-gradient(rgba(255, 250, 240, 0.86), rgba(255, 250, 240, 0.86)),
+          repeating-linear-gradient(-35deg, rgba(181, 54, 36, 0.13) 0 2px, transparent 2px 18px);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 18px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent-dark);
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 26px;
+        height: 2px;
+        background: var(--accent);
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 100%;
+        font-size: 4.35rem;
+        line-height: 0.9;
+        font-weight: 900;
+        overflow-wrap: break-word;
+      }
+
+      .intro p {
+        margin: 24px 0 0;
+        max-width: 36rem;
+        font-size: 1.04rem;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .dough-mark {
+        display: block;
+        width: min(230px, 62vw);
+        height: auto;
+        margin: 28px 0 0;
+        filter: drop-shadow(0 14px 18px rgba(79, 49, 24, 0.16));
+      }
+
+      .dough-mark text {
+        font: 700 15px Georgia, "Times New Roman", serif;
+        fill: var(--accent-dark);
+      }
+
+      .formula {
+        display: grid;
+        gap: 10px;
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid rgba(125, 87, 48, 0.2);
+      }
+
+      .formula span {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        font-size: 0.93rem;
+        color: var(--muted);
+      }
+
+      .formula strong {
+        color: var(--ink);
+      }
+
+      .calculator {
+        border-radius: 8px;
+        background: rgba(255, 253, 247, 0.9);
+        overflow: hidden;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1px;
+        background: var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .mode-picker {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        grid-column: 1 / -1;
+        min-inline-size: 0;
+        margin: 0;
+        padding: 20px;
+        border: 0;
+        background: var(--paper);
+      }
+
+      .total-control {
+        grid-column: 1 / -1;
+      }
+
+      .salt-control {
+        grid-column: 1 / -1;
+      }
+
+      .mode-picker legend {
+        grid-column: 1 / -1;
+        padding: 0;
+        color: var(--accent-dark);
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .mode-picker label {
+        display: block;
+        padding: 0;
+        background: transparent;
+      }
+
+      .mode-picker input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .mode-picker span {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 48px;
+        border: 1px solid rgba(125, 87, 48, 0.28);
+        border-radius: 8px;
+        color: var(--muted);
+        background: var(--flour);
+        font-size: 1rem;
+        font-weight: 700;
+        text-transform: none;
+      }
+
+      .mode-picker input:checked + span {
+        border-color: rgba(47, 112, 77, 0.44);
+        color: var(--basil);
+        background: rgba(47, 112, 77, 0.1);
+        box-shadow: inset 0 0 0 1px rgba(47, 112, 77, 0.24);
+      }
+
+      .mode-picker input:focus + span {
+        outline: 3px solid rgba(47, 112, 77, 0.18);
+        outline-offset: 2px;
+      }
+
+      label {
+        display: grid;
+        gap: 10px;
+        padding: 20px;
+        background: var(--paper);
+      }
+
+      label span {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        min-height: 20px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--accent-dark);
+      }
+
+      label small {
+        font-size: 0.83rem;
+        font-weight: 400;
+        text-transform: none;
+        color: var(--muted);
+      }
+
+      input {
+        width: 100%;
+        min-height: 54px;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        padding: 10px 12px;
+        color: var(--ink);
+        background: var(--flour);
+        font: 700 1.55rem/1 Georgia, "Times New Roman", serif;
+        box-shadow: inset 0 0 0 1px rgba(125, 87, 48, 0.22);
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--basil);
+        box-shadow: 0 0 0 4px rgba(47, 112, 77, 0.14);
+      }
+
+      .is-hidden {
+        display: none;
+      }
+
+      .notice {
+        margin: 20px;
+        padding: 16px 18px;
+        border-radius: 8px;
+        background: #fff8e7;
+        color: var(--accent-dark);
+        font-size: 0.98rem;
+        line-height: 1.45;
+      }
+
+      .notice[hidden] {
+        display: none;
+      }
+
+      .results {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1px;
+        background: var(--line);
+      }
+
+      .card {
+        display: grid;
+        align-content: start;
+        gap: 16px;
+        min-height: 320px;
+        padding: 20px;
+        border: 0;
+        border-radius: 0;
+        background: rgba(255, 250, 240, 0.96);
+        box-shadow: none;
+      }
+
+      .card:nth-child(2) {
+        background: #fff7e8;
+      }
+
+      .card h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--accent-dark);
+      }
+
+      .line-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        align-items: baseline;
+        padding: 0 0 13px;
+        border-bottom: 1px dashed rgba(125, 87, 48, 0.32);
+      }
+
+      .line-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .line-item span {
+        color: var(--muted);
+        line-height: 1.25;
+      }
+
+      .line-item strong {
+        white-space: nowrap;
+        font-size: 1.45rem;
+        line-height: 1;
+      }
+
+      .line-item.total {
+        padding: 14px;
+        border: 1px solid rgba(47, 112, 77, 0.2);
+        border-radius: 8px;
+        background: rgba(47, 112, 77, 0.08);
+      }
+
+      .line-item.total strong {
+        color: var(--basil);
+      }
+
+      .footnote {
+        margin: 18px 20px 22px;
+        color: var(--muted);
+        font-size: 0.91rem;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 860px) {
+        main {
+          width: min(680px, calc(100% - 24px));
+          padding: 18px 0;
+        }
+
+        .shell,
+        .results {
+          grid-template-columns: 1fr;
+        }
+
+        .intro {
+          min-height: auto;
+        }
+
+        .card {
+          min-height: auto;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .controls {
+          grid-template-columns: 1fr;
+        }
+
+        .intro,
+        label,
+        .card {
+          padding: 18px;
+        }
+
+        h1 {
+          font-size: 3rem;
+        }
+
+        label span {
+          display: grid;
+          gap: 3px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="shell">
+        <section class="intro" aria-labelledby="page-title">
+          <p class="eyebrow">custom batch size</p>
+          <h1 id="page-title">Pizza dough calculator</h1>
+          <p>
+            Enter your batch size, hydration, poolish weight, and salt rate.
+            The totals stay tied to the final dough weight, with the 100%
+            hydration poolish split out from the final mix.
+          </p>
+          <svg class="dough-mark" viewBox="0 0 260 140" role="img" aria-label="Labelled dough balls">
+            <path d="M23 78c0-33 22-54 55-54h103c34 0 56 21 56 54 0 33-22 54-56 54H78c-33 0-55-21-55-54Z" fill="#fff9ec" stroke="#c69968" stroke-width="3"></path>
+            <circle cx="79" cy="76" r="32" fill="#f7ddb5" stroke="#b88048" stroke-width="3"></circle>
+            <circle cx="129" cy="76" r="32" fill="#f8e4c3" stroke="#b88048" stroke-width="3"></circle>
+            <circle cx="179" cy="76" r="32" fill="#f5d7ad" stroke="#b88048" stroke-width="3"></circle>
+            <path d="M57 60c10-12 26-14 39-5M109 59c11-9 26-10 39-2M158 59c12-10 28-10 40 1" fill="none" stroke="#fffaf0" stroke-width="5" stroke-linecap="round"></path>
+            <path d="M69 116h122" stroke="#2f704d" stroke-width="4" stroke-linecap="round"></path>
+            <text id="doughMarkText" x="86" y="127">250g each</text>
+          </svg>
+          <div class="formula" aria-label="Calculation assumptions">
+            <span><strong>Poolish</strong> 100% hydration</span>
+            <span><strong>Salt</strong> baker's % of total flour</span>
+            <span><strong>Yeast</strong> intentionally omitted</span>
+          </div>
+        </section>
+
+        <section class="calculator" aria-label="Pizza dough calculator">
+          <div class="controls">
+            <fieldset class="mode-picker" aria-label="Batch size mode">
+              <legend>Batch size</legend>
+              <label for="modeBalls">
+                <input id="modeBalls" name="batchMode" type="radio" value="balls" checked>
+                <span>Balls</span>
+              </label>
+              <label for="modeTotal">
+                <input id="modeTotal" name="batchMode" type="radio" value="total">
+                <span>Total dough</span>
+              </label>
+            </fieldset>
+
+            <label class="balls-control" for="balls">
+              <span>Dough balls <small>quantity</small></span>
+              <input id="balls" name="balls" type="number" inputmode="numeric" min="1" step="1" value="4">
+            </label>
+
+            <label class="balls-control" for="ballWeight">
+              <span>Ball weight <small>grams each</small></span>
+              <input id="ballWeight" name="ballWeight" type="number" inputmode="decimal" min="1" step="1" value="250">
+            </label>
+
+            <label class="total-control is-hidden" for="totalWeight">
+              <span>Total dough <small>grams</small></span>
+              <input id="totalWeight" name="totalWeight" type="number" inputmode="decimal" min="1" step="1" value="1000">
+            </label>
+
+            <label for="hydration">
+              <span>Hydration <small>%</small></span>
+              <input id="hydration" name="hydration" type="number" inputmode="decimal" min="0.1" step="0.1" value="65">
+            </label>
+
+            <label for="poolish">
+              <span>Poolish <small>grams, total weight</small></span>
+              <input id="poolish" name="poolish" type="number" inputmode="decimal" min="0" step="1" value="200">
+            </label>
+
+            <label class="salt-control" for="salt">
+              <span>Salt <small>% of total flour</small></span>
+              <input id="salt" name="salt" type="number" inputmode="decimal" min="0" step="0.1" value="2.5">
+            </label>
+          </div>
+
+          <div id="message" class="notice" role="status" hidden></div>
+
+          <div class="results" aria-live="polite">
+            <article class="card" aria-labelledby="total-heading">
+              <h2 id="total-heading">Total recipe</h2>
+              <div class="line-item">
+                <span>Total dough</span>
+                <strong id="totalDough">1000g</strong>
+              </div>
+              <div class="line-item">
+                <span>Total flour</span>
+                <strong id="totalFlour">597g</strong>
+              </div>
+              <div class="line-item">
+                <span>Total water</span>
+                <strong id="totalWater">388g</strong>
+              </div>
+              <div class="line-item total">
+                <span>Salt</span>
+                <strong id="saltAmount">15g</strong>
+              </div>
+            </article>
+
+            <article class="card" aria-labelledby="poolish-heading">
+              <h2 id="poolish-heading">Poolish included</h2>
+              <div class="line-item">
+                <span>Total poolish</span>
+                <strong id="poolishTotal">200g</strong>
+              </div>
+              <div class="line-item">
+                <span>Poolish flour</span>
+                <strong id="poolishFlour">100g</strong>
+              </div>
+              <div class="line-item">
+                <span>Poolish water</span>
+                <strong id="poolishWater">100g</strong>
+              </div>
+            </article>
+
+            <article class="card" aria-labelledby="mix-heading">
+              <h2 id="mix-heading">Final mix additions</h2>
+              <div class="line-item">
+                <span>Add flour</span>
+                <strong id="finalFlour">497g</strong>
+              </div>
+              <div class="line-item">
+                <span>Add water</span>
+                <strong id="finalWater">288g</strong>
+              </div>
+              <div class="line-item total">
+                <span>Add salt</span>
+                <strong id="finalSalt">15g</strong>
+              </div>
+            </article>
+          </div>
+
+          <p class="footnote">
+            Rounded to whole grams. Because the poolish is 100% hydration,
+            half of its entered weight counts as flour and half counts as water.
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const fields = {
+        balls: document.getElementById("balls"),
+        ballWeight: document.getElementById("ballWeight"),
+        totalWeight: document.getElementById("totalWeight"),
+        hydration: document.getElementById("hydration"),
+        poolish: document.getElementById("poolish"),
+        salt: document.getElementById("salt")
+      };
+
+      const modeInputs = Array.from(document.querySelectorAll('input[name="batchMode"]'));
+      const ballsControls = Array.from(document.querySelectorAll(".balls-control"));
+      const totalControls = Array.from(document.querySelectorAll(".total-control"));
+      const doughMarkText = document.getElementById("doughMarkText");
+
+      const outputs = {
+        totalDough: document.getElementById("totalDough"),
+        totalFlour: document.getElementById("totalFlour"),
+        totalWater: document.getElementById("totalWater"),
+        saltAmount: document.getElementById("saltAmount"),
+        poolishTotal: document.getElementById("poolishTotal"),
+        poolishFlour: document.getElementById("poolishFlour"),
+        poolishWater: document.getElementById("poolishWater"),
+        finalFlour: document.getElementById("finalFlour"),
+        finalWater: document.getElementById("finalWater"),
+        finalSalt: document.getElementById("finalSalt")
+      };
+
+      const message = document.getElementById("message");
+
+      function readNumber(input) {
+        return Number.parseFloat(input.value);
+      }
+
+      function grams(value) {
+        return `${Math.round(value)}g`;
+      }
+
+      function getBatchMode() {
+        return document.querySelector('input[name="batchMode"]:checked').value;
+      }
+
+      function showMessage(text) {
+        message.textContent = text;
+        message.hidden = !text;
+      }
+
+      function clearOutputs() {
+        Object.values(outputs).forEach((output) => {
+          output.textContent = "--";
+        });
+      }
+
+      function setOutputs(values) {
+        outputs.totalDough.textContent = grams(values.targetDough);
+        outputs.totalFlour.textContent = grams(values.totalFlour);
+        outputs.totalWater.textContent = grams(values.totalWater);
+        outputs.saltAmount.textContent = grams(values.salt);
+        outputs.poolishTotal.textContent = grams(values.poolishGrams);
+        outputs.poolishFlour.textContent = grams(values.poolishFlour);
+        outputs.poolishWater.textContent = grams(values.poolishWater);
+        outputs.finalFlour.textContent = grams(values.finalFlour);
+        outputs.finalWater.textContent = grams(values.finalWater);
+        outputs.finalSalt.textContent = grams(values.salt);
+      }
+
+      function syncTotalWeightFromBalls() {
+        const balls = readNumber(fields.balls);
+        const ballWeight = readNumber(fields.ballWeight);
+
+        if (Number.isFinite(balls) && balls > 0 && Number.isFinite(ballWeight) && ballWeight > 0) {
+          fields.totalWeight.value = Math.round(balls * ballWeight);
+        }
+      }
+
+      function updateBatchControls(syncTotalFromBalls = false) {
+        const mode = getBatchMode();
+        const usingBalls = mode === "balls";
+
+        ballsControls.forEach((control) => {
+          control.classList.toggle("is-hidden", !usingBalls);
+        });
+        totalControls.forEach((control) => {
+          control.classList.toggle("is-hidden", usingBalls);
+        });
+
+        if (!usingBalls) {
+          if (syncTotalFromBalls) {
+            syncTotalWeightFromBalls();
+          }
+          doughMarkText.textContent = "total dough";
+        } else {
+          const ballWeight = readNumber(fields.ballWeight);
+          doughMarkText.textContent = Number.isFinite(ballWeight) && ballWeight > 0
+            ? `${Math.round(ballWeight)}g each`
+            : "grams each";
+        }
+      }
+
+      function calculate() {
+        const mode = getBatchMode();
+        const balls = readNumber(fields.balls);
+        const ballWeight = readNumber(fields.ballWeight);
+        const totalWeight = readNumber(fields.totalWeight);
+        const hydrationPercent = readNumber(fields.hydration);
+        const poolishGrams = readNumber(fields.poolish);
+        const saltPercent = readNumber(fields.salt);
+
+        let targetDough;
+
+        if (mode === "balls") {
+          if (!Number.isFinite(balls) || balls <= 0) {
+            showMessage("Enter at least one dough ball.");
+            clearOutputs();
+            return;
+          }
+
+          if (!Number.isFinite(ballWeight) || ballWeight <= 0) {
+            showMessage("Ball weight must be greater than 0g.");
+            clearOutputs();
+            return;
+          }
+
+          targetDough = balls * ballWeight;
+        } else {
+          if (!Number.isFinite(totalWeight) || totalWeight <= 0) {
+            showMessage("Total dough weight must be greater than 0g.");
+            clearOutputs();
+            return;
+          }
+
+          targetDough = totalWeight;
+        }
+
+        if (!Number.isFinite(hydrationPercent) || hydrationPercent <= 0) {
+          showMessage("Hydration must be greater than 0%.");
+          clearOutputs();
+          return;
+        }
+
+        if (!Number.isFinite(poolishGrams) || poolishGrams < 0) {
+          showMessage("Poolish must be 0g or more.");
+          clearOutputs();
+          return;
+        }
+
+        if (!Number.isFinite(saltPercent) || saltPercent < 0) {
+          showMessage("Salt must be 0% or more.");
+          clearOutputs();
+          return;
+        }
+
+        const hydration = hydrationPercent / 100;
+        const saltRate = saltPercent / 100;
+        const totalFlour = targetDough / (1 + hydration + saltRate);
+        const totalWater = totalFlour * hydration;
+        const salt = totalFlour * saltRate;
+        const poolishFlour = poolishGrams / 2;
+        const poolishWater = poolishGrams / 2;
+        const finalFlour = totalFlour - poolishFlour;
+        const finalWater = totalWater - poolishWater;
+
+        if (finalFlour < 0 || finalWater < 0) {
+          showMessage("That poolish is too large for this batch and hydration. Reduce the poolish amount or increase the dough size.");
+          clearOutputs();
+          return;
+        }
+
+        showMessage("");
+        setOutputs({
+          targetDough,
+          totalFlour,
+          totalWater,
+          salt,
+          poolishGrams,
+          poolishFlour,
+          poolishWater,
+          finalFlour,
+          finalWater
+        });
+      }
+
+      Object.values(fields).forEach((field) => {
+        field.addEventListener("input", () => {
+          if (getBatchMode() === "balls" && (field === fields.balls || field === fields.ballWeight)) {
+            syncTotalWeightFromBalls();
+          }
+          updateBatchControls();
+          calculate();
+        });
+      });
+
+      modeInputs.forEach((input) => {
+        input.addEventListener("change", () => {
+          updateBatchControls(input.value === "total");
+          calculate();
+        });
+      });
+
+      updateBatchControls();
+      calculate();
+    </script>
+  </body>
+</html>
