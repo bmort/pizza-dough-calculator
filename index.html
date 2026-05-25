@@ -260,6 +260,44 @@
         box-shadow: 0 0 0 4px rgba(47, 112, 77, 0.14);
       }
 
+      button {
+        min-height: 46px;
+        border: 1px solid rgba(47, 112, 77, 0.36);
+        border-radius: 8px;
+        padding: 10px 16px;
+        color: var(--flour);
+        background: var(--basil);
+        font: 700 0.98rem/1 Georgia, "Times New Roman", serif;
+        cursor: pointer;
+        box-shadow: 0 10px 24px rgba(47, 112, 77, 0.14);
+      }
+
+      button:hover {
+        background: #255d3f;
+      }
+
+      button:focus {
+        outline: 3px solid rgba(47, 112, 77, 0.22);
+        outline-offset: 2px;
+      }
+
+      .share-panel {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 250, 240, 0.94);
+      }
+
+      .share-panel span {
+        color: var(--muted);
+        font-size: 0.93rem;
+        line-height: 1.35;
+      }
+
       .is-hidden {
         display: none;
       }
@@ -464,6 +502,11 @@
             </label>
           </div>
 
+          <div class="share-panel">
+            <span id="shareStatus" aria-live="polite">The page URL updates as you edit the recipe.</span>
+            <button id="shareButton" type="button">Copy recipe link</button>
+          </div>
+
           <div id="message" class="notice" role="status" hidden></div>
 
           <div class="results" aria-live="polite">
@@ -542,6 +585,17 @@
       const ballsControls = Array.from(document.querySelectorAll(".balls-control"));
       const totalControls = Array.from(document.querySelectorAll(".total-control"));
       const doughMarkText = document.getElementById("doughMarkText");
+      const shareButton = document.getElementById("shareButton");
+      const shareStatus = document.getElementById("shareStatus");
+
+      const fieldParams = {
+        balls: "balls",
+        ballWeight: "ballWeight",
+        totalWeight: "total",
+        hydration: "hydration",
+        poolish: "poolish",
+        salt: "salt"
+      };
 
       const outputs = {
         totalDough: document.getElementById("totalDough"),
@@ -568,6 +622,63 @@
 
       function getBatchMode() {
         return document.querySelector('input[name="batchMode"]:checked').value;
+      }
+
+      function applyUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get("mode");
+
+        if (mode === "balls" || mode === "total") {
+          document.querySelector(`input[name="batchMode"][value="${mode}"]`).checked = true;
+        }
+
+        Object.entries(fieldParams).forEach(([fieldName, paramName]) => {
+          const value = params.get(paramName);
+
+          if (value !== null) {
+            fields[fieldName].value = value;
+          }
+        });
+      }
+
+      function buildRecipeUrl() {
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams();
+
+        params.set("mode", getBatchMode());
+
+        Object.entries(fieldParams).forEach(([fieldName, paramName]) => {
+          const value = fields[fieldName].value.trim();
+
+          if (value !== "") {
+            params.set(paramName, value);
+          }
+        });
+
+        url.search = params.toString();
+        url.hash = "";
+        return url.toString();
+      }
+
+      function updateAddressBar() {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, "", buildRecipeUrl());
+        }
+      }
+
+      async function copyRecipeLink() {
+        const url = buildRecipeUrl();
+
+        try {
+          if (!navigator.clipboard) {
+            throw new Error("Clipboard API unavailable");
+          }
+
+          await navigator.clipboard.writeText(url);
+          shareStatus.textContent = "Recipe link copied.";
+        } catch {
+          shareStatus.textContent = "Copy the URL from the address bar to share this recipe.";
+        }
       }
 
       function showMessage(text) {
@@ -717,6 +828,8 @@
           }
           updateBatchControls();
           calculate();
+          updateAddressBar();
+          shareStatus.textContent = "The page URL updates as you edit the recipe.";
         });
       });
 
@@ -724,11 +837,17 @@
         input.addEventListener("change", () => {
           updateBatchControls(input.value === "total");
           calculate();
+          updateAddressBar();
+          shareStatus.textContent = "The page URL updates as you edit the recipe.";
         });
       });
 
+      shareButton.addEventListener("click", copyRecipeLink);
+
+      applyUrlParams();
       updateBatchControls();
       calculate();
+      updateAddressBar();
     </script>
   </body>
 </html>

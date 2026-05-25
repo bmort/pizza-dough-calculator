@@ -1,17 +1,21 @@
-# Pizza Dough Calculator
+# 🍕 Pizza Dough Calculator
+
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20site-2f704d?logo=github)](https://bmort.github.io/pizza-dough-calculator/)
+
+![Pizza Dough Calculator logo](assets/logo.png)
 
 A small static website for calculating pizza dough ingredient weights. It is built as a single `index.html` file, so it can be hosted directly with GitHub Pages without any build step.
 
-## Features
+## ✨ Features
 
-- Calculate by dough ball count and ball weight.
-- Or calculate from a target total dough weight.
-- Set hydration percentage.
-- Set total poolish weight in grams.
-- Set salt as a baker's percentage of total flour.
-- See total recipe weights, poolish contribution, and final mix additions.
+- ⚖️ Calculate by dough ball count and ball weight.
+- 🎯 Or calculate from a target total dough weight.
+- 💧 Set hydration percentage.
+- 🫙 Set total poolish weight in grams.
+- 🧂 Set salt as a baker's percentage of total flour.
+- 📋 See total recipe weights, poolish contribution, and final mix additions.
 
-## Calculation Model
+## 🧮 Calculation Model
 
 The calculator uses baker's percentages against total flour, including flour already present in the poolish.
 
@@ -36,7 +40,7 @@ finalWater = totalWater - poolishWater
 
 If the poolish is too large for the selected dough size or hydration, the calculator shows a validation message instead of negative ingredient quantities.
 
-## Run Locally
+## 🖥️ Run Locally
 
 Open `index.html` directly in a browser:
 
@@ -46,7 +50,7 @@ file:///path/to/pizza_dough_calculator/index.html
 
 No package install or local server is required.
 
-## GitHub Pages
+## 🚀 GitHub Pages
 
 To host from GitHub Pages:
 
@@ -55,6 +59,6 @@ To host from GitHub Pages:
 3. Set the source to deploy from the `main` branch.
 4. Use the repository root as the Pages folder.
 
-## Scope
+## 🚧 Scope
 
 Yeast timing and fermentation modelling are intentionally out of scope. This calculator only handles flour, water, poolish, and salt quantities.
