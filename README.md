@@ -2,7 +2,7 @@
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20site-2f704d?logo=github)](https://bmort.github.io/pizza-dough-calculator/)
 
-![Pizza Dough Calculator logo](assets/logo.png)
+<img src="assets/logo.png" alt="Pizza Dough Calculator logo" width="33%">
 
 A small static website for calculating pizza dough ingredient weights. It is built as a single `index.html` file, so it can be hosted directly with GitHub Pages without any build step.
 
