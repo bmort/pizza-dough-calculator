@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>Pizza Dough Calculator</title>
     <style>
       :root {
@@ -24,9 +24,16 @@
         box-sizing: border-box;
       }
 
+      html {
+        width: 100%;
+        overflow-x: clip;
+      }
+
       body {
+        width: 100%;
         margin: 0;
         min-height: 100vh;
+        overflow-x: clip;
         font-family: Georgia, "Times New Roman", serif;
         color: var(--ink);
         -webkit-text-size-adjust: 100%;
@@ -48,12 +55,15 @@
         grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
         gap: 18px;
         align-items: start;
+        min-width: 0;
       }
 
       .intro,
       .calculator,
       .card,
       .notice {
+        min-width: 0;
+        max-width: 100%;
         border: 1px solid rgba(125, 87, 48, 0.24);
         box-shadow: var(--shadow);
       }
@@ -220,6 +230,7 @@
       label {
         display: grid;
         gap: 10px;
+        min-width: 0;
         padding: 20px;
         background: var(--paper);
       }
@@ -282,6 +293,16 @@
         outline-offset: 2px;
       }
 
+      .secondary-button {
+        color: var(--basil);
+        background: var(--flour);
+        box-shadow: inset 0 0 0 1px rgba(47, 112, 77, 0.18);
+      }
+
+      .secondary-button:hover {
+        background: #eef5ea;
+      }
+
       .share-panel {
         display: flex;
         flex-wrap: wrap;
@@ -294,9 +315,19 @@
       }
 
       .share-panel span {
+        flex: 1 1 220px;
+        min-width: 0;
         color: var(--muted);
         font-size: 0.93rem;
         line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+
+      .share-actions {
+        display: flex;
+        flex: 0 0 auto;
+        flex-wrap: wrap;
+        gap: 10px;
       }
 
       .is-hidden {
@@ -321,6 +352,7 @@
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 1px;
+        min-width: 0;
         background: var(--line);
       }
 
@@ -414,17 +446,30 @@
       }
 
       @media (max-width: 560px) {
+        html,
+        body {
+          max-width: 100%;
+          overflow-x: hidden;
+        }
+
         main {
           width: 100%;
+          max-width: 100%;
           padding: 0;
+          overflow-x: hidden;
         }
 
         .shell {
+          width: 100%;
+          max-width: 100%;
           gap: 0;
+          overflow-x: hidden;
         }
 
         .intro,
         .calculator {
+          width: 100%;
+          max-width: 100%;
           border-right: 0;
           border-left: 0;
           border-radius: 0;
@@ -467,7 +512,8 @@
 
         input {
           min-height: 50px;
-          font-size: 1.35rem;
+          font-size: 18px;
+          line-height: 1.1;
         }
 
         .mode-picker {
@@ -481,6 +527,10 @@
         .share-panel {
           display: grid;
           padding: 16px 18px;
+        }
+
+        .share-actions {
+          display: grid;
         }
 
         .share-panel button {
@@ -536,6 +586,15 @@
           font-size: 0.94rem;
         }
 
+        .formula span {
+          align-items: start;
+          overflow-wrap: anywhere;
+        }
+
+        .formula span:last-child {
+          text-align: right;
+        }
+
         .line-item strong {
           font-size: 1.22rem;
         }
@@ -565,7 +624,7 @@
           <div class="formula" aria-label="Calculation assumptions">
             <span><strong>Poolish</strong> 100% hydration</span>
             <span><strong>Salt</strong> baker's % of total flour</span>
-            <span><strong>Yeast</strong> intentionally omitted</span>
+            <span><strong>Yeast</strong> 0.1-0.2g for 12-16h poolish</span>
           </div>
         </section>
 
@@ -616,7 +675,10 @@
 
           <div class="share-panel">
             <span id="shareStatus" aria-live="polite">The page URL updates as you edit the recipe.</span>
-            <button id="shareButton" type="button">Copy recipe link</button>
+            <div class="share-actions">
+              <button id="resetButton" class="secondary-button" type="button">Reset defaults</button>
+              <button id="shareButton" type="button">Copy recipe link</button>
+            </div>
           </div>
 
           <div id="message" class="notice" role="status" hidden></div>
@@ -678,6 +740,7 @@
           <p class="footnote">
             Rounded to whole grams. Because the poolish is 100% hydration,
             half of its entered weight counts as flour and half counts as water.
+            For a 12-16 hour poolish, yeast is typically around 0.1-0.2g.
           </p>
         </section>
       </div>
@@ -697,8 +760,19 @@
       const ballsControls = Array.from(document.querySelectorAll(".balls-control"));
       const totalControls = Array.from(document.querySelectorAll(".total-control"));
       const doughMarkText = document.getElementById("doughMarkText");
+      const resetButton = document.getElementById("resetButton");
       const shareButton = document.getElementById("shareButton");
       const shareStatus = document.getElementById("shareStatus");
+
+      const defaults = {
+        mode: "balls",
+        balls: "4",
+        ballWeight: "250",
+        totalWeight: "1000",
+        hydration: "65",
+        poolish: "200",
+        salt: "2.5"
+      };
 
       const fieldParams = {
         balls: "balls",
@@ -791,6 +865,21 @@
         } catch {
           shareStatus.textContent = "Copy the URL from the address bar to share this recipe.";
         }
+      }
+
+      function resetDefaults() {
+        document.querySelector(`input[name="batchMode"][value="${defaults.mode}"]`).checked = true;
+
+        Object.entries(defaults).forEach(([fieldName, value]) => {
+          if (fieldName !== "mode") {
+            fields[fieldName].value = value;
+          }
+        });
+
+        updateBatchControls();
+        calculate();
+        updateAddressBar();
+        shareStatus.textContent = "Defaults restored.";
       }
 
       function showMessage(text) {
@@ -955,6 +1044,7 @@
       });
 
       shareButton.addEventListener("click", copyRecipeLink);
+      resetButton.addEventListener("click", resetDefaults);
 
       applyUrlParams();
       updateBatchControls();
