@@ -1,1055 +1,1211 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Pizza Dough Calculator</title>
-    <style>
-      :root {
-        color-scheme: light;
-        --ink: #252019;
-        --muted: #6d6257;
-        --paper: #fffaf0;
-        --panel: #fff4dc;
-        --panel-strong: #f3dcc0;
-        --line: #d5b690;
-        --accent: #b53624;
-        --accent-dark: #7d2419;
-        --basil: #2f704d;
-        --flour: #fffdf7;
-        --shadow: 0 22px 60px rgba(79, 49, 24, 0.18);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html {
-        width: 100%;
-        overflow-x: clip;
-      }
-
-      body {
-        width: 100%;
-        margin: 0;
-        min-height: 100vh;
-        overflow-x: clip;
-        font-family: Georgia, "Times New Roman", serif;
-        color: var(--ink);
-        -webkit-text-size-adjust: 100%;
-        background:
-          radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.92) 0 2px, transparent 3px),
-          radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.65) 0 1px, transparent 2px),
-          linear-gradient(135deg, #ead0ac 0%, #f6e5c7 48%, #e2bd8f 100%);
-        background-size: 42px 42px, 34px 34px, 100% 100%;
-      }
-
-      main {
-        width: min(1120px, calc(100% - 32px));
-        margin: 0 auto;
-        padding: 34px 0;
-      }
-
-      .shell {
-        display: grid;
-        grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
-        gap: 18px;
-        align-items: start;
-        min-width: 0;
-      }
-
-      .intro,
-      .calculator,
-      .card,
-      .notice {
-        min-width: 0;
-        max-width: 100%;
-        border: 1px solid rgba(125, 87, 48, 0.24);
-        box-shadow: var(--shadow);
-      }
-
-      .intro {
-        min-height: 100%;
-        padding: 28px;
-        border-radius: 8px;
-        background:
-          linear-gradient(rgba(255, 250, 240, 0.86), rgba(255, 250, 240, 0.86)),
-          repeating-linear-gradient(-35deg, rgba(181, 54, 36, 0.13) 0 2px, transparent 2px 18px);
-      }
-
-      .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin: 0 0 18px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--accent-dark);
-      }
-
-      .eyebrow::before {
-        content: "";
-        width: 26px;
-        height: 2px;
-        background: var(--accent);
-      }
-
-      h1 {
-        margin: 0;
-        max-width: 100%;
-        font-size: 4.35rem;
-        line-height: 0.9;
-        font-weight: 900;
-        overflow-wrap: break-word;
-      }
-
-      .intro p {
-        margin: 24px 0 0;
-        max-width: 36rem;
-        font-size: 1.04rem;
-        line-height: 1.55;
-        color: var(--muted);
-      }
-
-      .dough-mark {
-        display: block;
-        width: min(230px, 62vw);
-        height: auto;
-        margin: 28px 0 0;
-        filter: drop-shadow(0 14px 18px rgba(79, 49, 24, 0.16));
-      }
-
-      .dough-mark text {
-        font: 700 15px Georgia, "Times New Roman", serif;
-        fill: var(--accent-dark);
-      }
-
-      .formula {
-        display: grid;
-        gap: 10px;
-        margin-top: 28px;
-        padding-top: 22px;
-        border-top: 1px solid rgba(125, 87, 48, 0.2);
-      }
-
-      .formula span {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        font-size: 0.93rem;
-        color: var(--muted);
-      }
-
-      .formula strong {
-        color: var(--ink);
-      }
-
-      .calculator {
-        border-radius: 8px;
-        background: rgba(255, 253, 247, 0.9);
-        overflow: hidden;
-      }
-
-      .controls {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1px;
-        background: var(--line);
-        border-bottom: 1px solid var(--line);
-      }
-
-      .mode-picker {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        grid-column: 1 / -1;
-        min-inline-size: 0;
-        margin: 0;
-        padding: 20px;
-        border: 0;
-        background: var(--paper);
-      }
-
-      .total-control {
-        grid-column: 1 / -1;
-      }
-
-      .salt-control {
-        grid-column: 1 / -1;
-      }
-
-      .mode-picker legend {
-        grid-column: 1 / -1;
-        padding: 0;
-        color: var(--accent-dark);
-        font-size: 0.86rem;
-        font-weight: 700;
-        text-transform: uppercase;
-      }
-
-      .mode-picker label {
-        display: block;
-        padding: 0;
-        background: transparent;
-      }
-
-      .mode-picker input {
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      .mode-picker span {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 48px;
-        border: 1px solid rgba(125, 87, 48, 0.28);
-        border-radius: 8px;
-        color: var(--muted);
-        background: var(--flour);
-        font-size: 1rem;
-        font-weight: 700;
-        text-transform: none;
-      }
-
-      .mode-picker input:checked + span {
-        border-color: rgba(47, 112, 77, 0.44);
-        color: var(--basil);
-        background: rgba(47, 112, 77, 0.1);
-        box-shadow: inset 0 0 0 1px rgba(47, 112, 77, 0.24);
-      }
-
-      .mode-picker input:focus + span {
-        outline: 3px solid rgba(47, 112, 77, 0.18);
-        outline-offset: 2px;
-      }
-
-      label {
-        display: grid;
-        gap: 10px;
-        min-width: 0;
-        padding: 20px;
-        background: var(--paper);
-      }
-
-      label span {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 12px;
-        min-height: 20px;
-        font-size: 0.86rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: var(--accent-dark);
-      }
-
-      label small {
-        font-size: 0.83rem;
-        font-weight: 400;
-        text-transform: none;
-        color: var(--muted);
-      }
-
-      input {
-        width: 100%;
-        min-height: 54px;
-        border: 2px solid transparent;
-        border-radius: 6px;
-        padding: 10px 12px;
-        color: var(--ink);
-        background: var(--flour);
-        font: 700 1.55rem/1 Georgia, "Times New Roman", serif;
-        box-shadow: inset 0 0 0 1px rgba(125, 87, 48, 0.22);
-      }
-
-      input:focus {
-        outline: none;
-        border-color: var(--basil);
-        box-shadow: 0 0 0 4px rgba(47, 112, 77, 0.14);
-      }
-
-      button {
-        min-height: 46px;
-        border: 1px solid rgba(47, 112, 77, 0.36);
-        border-radius: 8px;
-        padding: 10px 16px;
-        color: var(--flour);
-        background: var(--basil);
-        font: 700 0.98rem/1 Georgia, "Times New Roman", serif;
-        cursor: pointer;
-        box-shadow: 0 10px 24px rgba(47, 112, 77, 0.14);
-      }
-
-      button:hover {
-        background: #255d3f;
-      }
-
-      button:focus {
-        outline: 3px solid rgba(47, 112, 77, 0.22);
-        outline-offset: 2px;
-      }
-
-      .secondary-button {
-        color: var(--basil);
-        background: var(--flour);
-        box-shadow: inset 0 0 0 1px rgba(47, 112, 77, 0.18);
-      }
-
-      .secondary-button:hover {
-        background: #eef5ea;
-      }
-
-      .share-panel {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--line);
-        background: rgba(255, 250, 240, 0.94);
-      }
-
-      .share-panel span {
-        flex: 1 1 220px;
-        min-width: 0;
-        color: var(--muted);
-        font-size: 0.93rem;
-        line-height: 1.35;
-        overflow-wrap: anywhere;
-      }
-
-      .share-actions {
-        display: flex;
-        flex: 0 0 auto;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .is-hidden {
-        display: none;
-      }
-
-      .notice {
-        margin: 20px;
-        padding: 16px 18px;
-        border-radius: 8px;
-        background: #fff8e7;
-        color: var(--accent-dark);
-        font-size: 0.98rem;
-        line-height: 1.45;
-      }
-
-      .notice[hidden] {
-        display: none;
-      }
-
-      .results {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 1px;
-        min-width: 0;
-        background: var(--line);
-      }
-
-      .card {
-        display: grid;
-        align-content: start;
-        gap: 16px;
-        min-height: 320px;
-        padding: 20px;
-        border: 0;
-        border-radius: 0;
-        background: rgba(255, 250, 240, 0.96);
-        box-shadow: none;
-      }
-
-      .card:nth-child(2) {
-        background: #fff7e8;
-      }
-
-      .card h2 {
-        margin: 0;
-        font-size: 1.1rem;
-        color: var(--accent-dark);
-      }
-
-      .line-item {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 14px;
-        align-items: baseline;
-        padding: 0 0 13px;
-        border-bottom: 1px dashed rgba(125, 87, 48, 0.32);
-      }
-
-      .line-item:last-child {
-        border-bottom: 0;
-        padding-bottom: 0;
-      }
-
-      .line-item span {
-        color: var(--muted);
-        line-height: 1.25;
-      }
-
-      .line-item strong {
-        white-space: nowrap;
-        font-size: 1.45rem;
-        line-height: 1;
-      }
-
-      .line-item.total {
-        padding: 14px;
-        border: 1px solid rgba(47, 112, 77, 0.2);
-        border-radius: 8px;
-        background: rgba(47, 112, 77, 0.08);
-      }
-
-      .line-item.total strong {
-        color: var(--basil);
-      }
-
-      .footnote {
-        margin: 18px 20px 22px;
-        color: var(--muted);
-        font-size: 0.91rem;
-        line-height: 1.5;
-      }
-
-      @media (max-width: 860px) {
-        main {
-          width: min(680px, calc(100% - 24px));
-          padding: 18px 0;
-        }
-
-        .shell,
-        .results {
-          grid-template-columns: 1fr;
-        }
-
-        .intro {
-          min-height: auto;
-        }
-
-        .card {
-          min-height: auto;
-        }
-
-        .share-panel {
-          align-items: stretch;
-        }
-      }
-
-      @media (max-width: 560px) {
-        html,
-        body {
-          max-width: 100%;
-          overflow-x: hidden;
-        }
-
-        main {
-          width: 100%;
-          max-width: 100%;
-          padding: 0;
-          overflow-x: hidden;
-        }
-
-        .shell {
-          width: 100%;
-          max-width: 100%;
-          gap: 0;
-          overflow-x: hidden;
-        }
-
-        .intro,
-        .calculator {
-          width: 100%;
-          max-width: 100%;
-          border-right: 0;
-          border-left: 0;
-          border-radius: 0;
-          box-shadow: none;
-        }
-
-        .controls {
-          grid-template-columns: 1fr;
-        }
-
-        .intro,
-        label,
-        .card {
-          padding: 18px;
-        }
-
-        h1 {
-          font-size: 3rem;
-        }
-
-        .intro p {
-          margin-top: 18px;
-          font-size: 1rem;
-        }
-
-        .dough-mark {
-          width: 180px;
-          margin: 20px auto 0;
-        }
-
-        .formula {
-          margin-top: 20px;
-          padding-top: 18px;
-        }
-
-        label span {
-          display: grid;
-          gap: 3px;
-        }
-
-        input {
-          min-height: 50px;
-          font-size: 18px;
-          line-height: 1.1;
-        }
-
-        .mode-picker {
-          padding: 18px;
-        }
-
-        .mode-picker span {
-          min-height: 46px;
-        }
-
-        .share-panel {
-          display: grid;
-          padding: 16px 18px;
-        }
-
-        .share-actions {
-          display: grid;
-        }
-
-        .share-panel button {
-          width: 100%;
-        }
-
-        .results {
-          gap: 8px;
-          padding: 8px 0;
-          background: rgba(213, 182, 144, 0.35);
-        }
-
-        .card {
-          gap: 12px;
-          border-top: 1px solid rgba(125, 87, 48, 0.18);
-          border-bottom: 1px solid rgba(125, 87, 48, 0.18);
-        }
-
-        .line-item {
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 10px;
-          padding-bottom: 11px;
-        }
-
-        .line-item strong {
-          font-size: 1.32rem;
-        }
-
-        .footnote {
-          margin: 14px 18px 20px;
-        }
-      }
-
-      @media (max-width: 390px) {
-        .intro,
-        label,
-        .card,
-        .mode-picker {
-          padding-right: 14px;
-          padding-left: 14px;
-        }
-
-        h1 {
-          font-size: 2.55rem;
-        }
-
-        .eyebrow {
-          letter-spacing: 0.08em;
-        }
-
-        .formula span,
-        .line-item {
-          font-size: 0.94rem;
-        }
-
-        .formula span {
-          align-items: start;
-          overflow-wrap: anywhere;
-        }
-
-        .formula span:last-child {
-          text-align: right;
-        }
-
-        .line-item strong {
-          font-size: 1.22rem;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <div class="shell">
-        <section class="intro" aria-labelledby="page-title">
-          <p class="eyebrow">custom batch size</p>
-          <h1 id="page-title">Pizza dough calculator</h1>
-          <p>
-            Enter your batch size, hydration, poolish weight, and salt rate.
-            The totals stay tied to the final dough weight, with the 100%
-            hydration poolish split out from the final mix.
-          </p>
-          <svg class="dough-mark" viewBox="0 0 260 140" role="img" aria-label="Labelled dough balls">
-            <path d="M23 78c0-33 22-54 55-54h103c34 0 56 21 56 54 0 33-22 54-56 54H78c-33 0-55-21-55-54Z" fill="#fff9ec" stroke="#c69968" stroke-width="3"></path>
-            <circle cx="79" cy="76" r="32" fill="#f7ddb5" stroke="#b88048" stroke-width="3"></circle>
-            <circle cx="129" cy="76" r="32" fill="#f8e4c3" stroke="#b88048" stroke-width="3"></circle>
-            <circle cx="179" cy="76" r="32" fill="#f5d7ad" stroke="#b88048" stroke-width="3"></circle>
-            <path d="M57 60c10-12 26-14 39-5M109 59c11-9 26-10 39-2M158 59c12-10 28-10 40 1" fill="none" stroke="#fffaf0" stroke-width="5" stroke-linecap="round"></path>
-            <path d="M69 116h122" stroke="#2f704d" stroke-width="4" stroke-linecap="round"></path>
-            <text id="doughMarkText" x="86" y="127">250g each</text>
-          </svg>
-          <div class="formula" aria-label="Calculation assumptions">
-            <span><strong>Poolish</strong> 100% hydration</span>
-            <span><strong>Salt</strong> baker's % of total flour</span>
-            <span><strong>Yeast</strong> 0.1-0.2g for 12-16h poolish</span>
-          </div>
-        </section>
-
-        <section class="calculator" aria-label="Pizza dough calculator">
-          <div class="controls">
-            <fieldset class="mode-picker" aria-label="Batch size mode">
-              <legend>Batch size</legend>
-              <label for="modeBalls">
-                <input id="modeBalls" name="batchMode" type="radio" value="balls" checked>
-                <span>Balls</span>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F1A15">
+<title>Pizza Dough Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    /* warm paper palette */
+    --bg: #F1EAE0;
+    --bg-2: #ECE3D6;
+    --paper: #FBF6EE;
+    --ink: #1F1A15;
+    --ink-2: #4A4036;
+    --muted: #8A7E70;
+    --rule: #D9CDBC;
+    --rule-soft: #E6DCC9;
+    --accent: oklch(0.62 0.18 28);     /* tomato */
+    --accent-ink: oklch(0.46 0.18 28); /* deep tomato */
+    --accent-soft: oklch(0.92 0.06 28);
+    --sage: oklch(0.62 0.07 150);
+    --sage-ink: oklch(0.42 0.07 150);
+    --sage-soft: oklch(0.92 0.04 150);
+    --amber: oklch(0.78 0.13 75);
+    --shadow-sm: 0 1px 0 rgba(31,26,21,.04), 0 1px 2px rgba(31,26,21,.06);
+    --shadow-md: 0 1px 0 rgba(31,26,21,.04), 0 12px 28px -16px rgba(31,26,21,.18);
+    --shadow-lg: 0 1px 0 rgba(31,26,21,.04), 0 30px 60px -28px rgba(31,26,21,.28);
+    --radius: 14px;
+    --radius-lg: 22px;
+    --radius-sm: 10px;
+    --t: 220ms cubic-bezier(.2,.7,.2,1);
+  }
+
+  *{ box-sizing: border-box; }
+  [hidden]{ display: none !important; }
+  html, body{ width:100%; }
+  html{ overflow-x:clip; }
+  body{
+    margin:0;
+    min-height:100vh;
+    min-height:100dvh;
+    color:var(--ink);
+    font-family: "Geist", system-ui, -apple-system, sans-serif;
+    font-size:16px;
+    line-height:1.5;
+    background:
+      radial-gradient(1200px 600px at 90% -10%, rgba(224,67,42,.06), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(70,130,80,.05), transparent 60%),
+      var(--bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x:clip;
+  }
+
+  /* ───────── Shell ───────── */
+  .app{
+    width: min(1180px, 100% - 32px);
+    margin: 0 auto;
+    padding: 28px 0 140px;
+  }
+  @media (max-width: 720px){
+    .app{ width: 100%; padding: 16px 16px 120px; }
+  }
+
+  /* ───────── Topbar ───────── */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px;
+    padding: 6px 4px 22px;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:"Instrument Serif", Georgia, serif;
+    font-size: 22px;
+    letter-spacing:.01em;
+  }
+  .brand .dot{
+    width:10px; height:10px; border-radius:50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(224,67,42,.12);
+  }
+  .topbar .meta{
+    display:flex; gap:8px; align-items:center;
+    color: var(--muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .pill{
+    display:inline-flex; align-items:center; gap:6px;
+    height:30px; padding: 0 12px;
+    border-radius: 999px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    color: var(--ink-2);
+    font-size:12.5px; font-weight:500;
+    letter-spacing: .02em;
+  }
+  .pill .swatch{ width:8px; height:8px; border-radius:50%; background: var(--accent); }
+
+  /* ───────── Hero ───────── */
+  .hero{ padding: 8px 4px 28px; }
+  .hero h1{
+    font-family:"Instrument Serif", Georgia, serif;
+    font-weight: 400;
+    margin: 0;
+    font-size: clamp(48px, 9.5vw, 124px);
+    line-height: .92;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .hero h1 em{
+    font-style: italic;
+    color: var(--accent-ink);
+  }
+  .hero .lede{
+    margin: 18px 0 0;
+    max-width: 58ch;
+    color: var(--ink-2);
+    font-size: clamp(15px, 2vw, 17px);
+    line-height: 1.55;
+  }
+
+  /* ───────── Composition bar ───────── */
+  .composition{
+    margin: 28px 4px 8px;
+    padding: 18px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, var(--paper), #F8F1E4);
+    border:1px solid var(--rule);
+    box-shadow: var(--shadow-md);
+  }
+  .comp-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    gap:12px; margin-bottom: 14px;
+    font-size: 12px; letter-spacing:.14em; text-transform: uppercase;
+    color: var(--muted); font-weight:600;
+  }
+  .comp-head .target{
+    font-family:"Geist Mono", ui-monospace, monospace;
+    color: var(--ink);
+    font-size: 13px;
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 500;
+  }
+  .comp-head .target b{ font-weight:600; }
+  .bar{
+    position:relative;
+    height: 56px;
+    border-radius: 14px;
+    background: var(--bg-2);
+    overflow: hidden;
+    display:flex;
+    box-shadow: inset 0 0 0 1px var(--rule);
+  }
+  .bar .seg{
+    height:100%;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:600; font-size: 12.5px;
+    letter-spacing:.02em;
+    transition: flex-basis var(--t), background var(--t);
+    overflow:hidden;
+    white-space: nowrap;
+    text-shadow: 0 1px 0 rgba(0,0,0,.12);
+  }
+  .bar .seg.flour{ background: linear-gradient(180deg, #E9C98A, #D9B36A); color:#3a2b16; text-shadow:none; }
+  .bar .seg.water{ background: linear-gradient(180deg, #6FA8C9, #4F8DB3); }
+  .bar .seg.salt { background: linear-gradient(180deg, #2b2620, #1F1A15); }
+  .bar .seg .lbl{ font-family:"Geist Mono", ui-monospace, monospace; font-size:11px; opacity:.92; }
+  .bar .seg .val{ font-family:"Geist Mono", ui-monospace, monospace; font-size:12.5px; margin-left:8px; }
+  .bar .seg-text{ display:flex; align-items:baseline; gap:6px; padding: 0 10px; }
+  .bar .seg.salt .seg-text{ padding: 0 6px; }
+
+  .legend{
+    display:flex; flex-wrap:wrap; gap: 14px 22px;
+    margin-top: 14px;
+    font-size: 13px; color: var(--ink-2);
+  }
+  .legend .item{ display:flex; align-items:center; gap:8px; }
+  .legend .key{ width:10px; height:10px; border-radius: 3px; }
+  .legend .key.flour{ background:#D9B36A; }
+  .legend .key.water{ background:#4F8DB3; }
+  .legend .key.salt{ background:#1F1A15; }
+  .legend .item b{ font-family:"Geist Mono", ui-monospace, monospace; font-weight:500; color: var(--ink); }
+
+  /* ───────── Sections layout ───────── */
+  .grid{
+    display:grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 18px;
+    margin-top: 18px;
+  }
+  @media (max-width: 980px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+
+  .panel{
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    border:1px solid var(--rule);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .panel-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .panel-head h2{
+    margin:0;
+    font-family:"Instrument Serif", Georgia, serif;
+    font-weight:400;
+    font-size: 22px;
+    letter-spacing:.005em;
+  }
+  .panel-head .hint{
+    color: var(--muted); font-size:12.5px;
+    font-family:"Geist Mono", ui-monospace, monospace;
+  }
+
+  /* ───────── Controls (inputs) ───────── */
+  .controls{
+    padding: 8px 0 4px;
+  }
+  .field{
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--rule-soft);
+    display:grid; gap:10px;
+  }
+  .field:last-child{ border-bottom: 0; }
+  .field-head{
+    display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  }
+  .field-head .label{
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--ink);
+  }
+  .field-head .unit{
+    font-size: 12px;
+    color: var(--muted);
+    font-family:"Geist Mono", ui-monospace, monospace;
+  }
+  .field-head .value{
+    font-family:"Geist Mono", ui-monospace, monospace;
+    font-size: 16px;
+    color: var(--ink);
+    font-weight:600;
+    font-variant-numeric: tabular-nums;
+    padding: 4px 10px;
+    background: var(--bg-2);
+    border-radius: 8px;
+    min-width: 80px;
+    text-align:right;
+  }
+
+  /* Segmented control */
+  .segment{
+    display:flex; gap:4px;
+    padding:4px;
+    background: var(--bg-2);
+    border-radius: 12px;
+    width: 100%;
+  }
+  .segment label{ flex:1; }
+  .segment input{ position:absolute; opacity:0; pointer-events:none; }
+  .segment .seg-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    height:44px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color var(--t), background var(--t), box-shadow var(--t);
+    user-select: none;
+  }
+  .segment input:checked + .seg-btn{
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: var(--shadow-sm), 0 0 0 1px var(--rule);
+  }
+  .segment input:focus-visible + .seg-btn{
+    box-shadow: var(--shadow-sm), 0 0 0 2px var(--accent);
+  }
+
+  /* Stepper (number with +/- buttons) */
+  .stepper{
+    display:flex; align-items:stretch;
+    background: var(--bg-2);
+    border-radius: 12px;
+    overflow: hidden;
+    height: 56px;
+    box-shadow: inset 0 0 0 1px var(--rule);
+  }
+  .stepper:focus-within{ box-shadow: inset 0 0 0 2px var(--accent); }
+  .stepper button{
+    appearance:none;
+    width:56px;
+    border: 0;
+    background: transparent;
+    font-size: 22px;
+    color: var(--ink);
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1;
+    display:flex; align-items:center; justify-content:center;
+    transition: background var(--t);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .stepper button:hover{ background: rgba(0,0,0,.04); }
+  .stepper button:active{ background: rgba(0,0,0,.07); }
+  .stepper input{
+    flex:1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    text-align:center;
+    font-family:"Geist Mono", ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--ink);
+    padding: 0;
+    -moz-appearance: textfield;
+  }
+  .stepper input::-webkit-outer-spin-button,
+  .stepper input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  .stepper input:focus{ outline: none; }
+
+  .pair{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 480px){
+    .pair{ grid-template-columns: 1fr; }
+  }
+
+  /* Slider */
+  .slider-row{ display:flex; align-items:center; gap:14px; }
+  .slider{
+    flex:1;
+    -webkit-appearance: none; appearance:none;
+    height: 44px;
+    background: transparent;
+    margin: 0;
+    cursor: pointer;
+  }
+  .slider::-webkit-slider-runnable-track{
+    height: 8px;
+    background: linear-gradient(90deg, var(--accent) 0 var(--p,0%), var(--bg-2) var(--p,0%) 100%);
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--rule);
+  }
+  .slider::-moz-range-track{
+    height: 8px;
+    background: linear-gradient(90deg, var(--accent) 0 var(--p,0%), var(--bg-2) var(--p,0%) 100%);
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--rule);
+  }
+  .slider::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width: 28px; height: 28px; border-radius:50%;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    margin-top: -10px;
+    box-shadow: var(--shadow-md);
+    cursor: grab;
+    transition: transform var(--t);
+  }
+  .slider::-moz-range-thumb{
+    width: 28px; height: 28px; border-radius:50%;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    box-shadow: var(--shadow-md);
+    cursor: grab;
+  }
+  .slider:active::-webkit-slider-thumb{ transform: scale(1.08); cursor: grabbing; }
+  .slider:focus{ outline: none; }
+  .slider:focus-visible::-webkit-slider-thumb{ box-shadow: 0 0 0 4px rgba(224,67,42,.25), var(--shadow-md); }
+
+  .tick-row{
+    display:flex; justify-content:space-between;
+    margin-top: 4px;
+    color: var(--muted);
+    font-family:"Geist Mono", ui-monospace, monospace;
+    font-size: 11px;
+  }
+  .tick-row button{
+    appearance:none; background:none; border:0; padding: 2px 6px;
+    color: var(--muted); cursor:pointer; font: inherit;
+    border-radius: 6px;
+  }
+  .tick-row button:hover{ background: var(--bg-2); color: var(--ink); }
+
+  /* ───────── Results ───────── */
+  .results{
+    display:grid;
+    gap: 14px;
+    padding: 20px;
+  }
+  .result-card{
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    border: 1px solid var(--rule-soft);
+    padding: 16px;
+    transition: background var(--t), border-color var(--t);
+  }
+  .result-card.featured{
+    background: linear-gradient(180deg, #FFF8EC, #FAEBCF);
+    border-color: rgba(224,67,42,.25);
+  }
+  .result-card .head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 12px;
+  }
+  .result-card .head .name{
+    font-family:"Instrument Serif", Georgia, serif;
+    font-size: 20px; line-height: 1;
+  }
+  .result-card .head .tag{
+    font-size: 11px; letter-spacing:.14em; text-transform: uppercase;
+    color: var(--muted); font-weight:600;
+  }
+  .lines{ display:grid; gap: 8px; }
+  .line{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .line:last-child{ border-bottom: 0; padding-bottom: 0; }
+  .line .lbl{ color: var(--ink-2); font-size: 14px; }
+  .line .num{
+    font-family:"Geist Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 22px; font-weight: 600; color: var(--ink);
+    letter-spacing: -.005em;
+  }
+  .line.total{
+    margin-top: 4px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(31,26,21,.04);
+    border: 1px solid var(--rule);
+  }
+  .line.total .num{ color: var(--accent-ink); }
+
+  /* Big totals (recipe headline) */
+  .headline{
+    padding: 18px 20px 0;
+  }
+  .headline .row{
+    display:flex; flex-wrap:wrap; gap: 18px 28px;
+    align-items: baseline;
+  }
+  .headline .stat .k{
+    display:block;
+    font-size: 11px; letter-spacing:.14em; text-transform: uppercase;
+    color: var(--muted); font-weight:600;
+  }
+  .headline .stat .v{
+    display:block;
+    font-family:"Instrument Serif", Georgia, serif;
+    font-size: clamp(34px, 6vw, 56px);
+    line-height: 1;
+    letter-spacing: -.02em;
+    margin-top: 4px;
+  }
+  .headline .stat.accent .v{ color: var(--accent-ink); }
+  .headline .stat.sage .v{ color: var(--sage-ink); }
+
+  /* Footnote */
+  .footnote{
+    padding: 14px 20px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  /* Notice */
+  .notice{
+    margin: 0 20px 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: oklch(0.95 0.06 60);
+    color: oklch(0.42 0.13 50);
+    border: 1px solid oklch(0.88 0.08 60);
+    font-size: 14px;
+  }
+  .notice[hidden]{ display:none; }
+
+  /* ───────── Sticky action bar ───────── */
+  .actions{
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    display:flex; align-items:center; gap: 10px;
+    padding: 8px;
+    border-radius: 999px;
+    background: rgba(31,26,21,.92);
+    color: #FBF6EE;
+    box-shadow: 0 16px 40px -10px rgba(31,26,21,.4), 0 0 0 1px rgba(255,255,255,.05) inset;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 50;
+    max-width: calc(100% - 24px);
+  }
+  .actions .status{
+    padding: 0 12px 0 14px;
+    font-size: 13px;
+    color: #DCCDB6;
+    white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+    max-width: 240px;
+  }
+  @media (max-width: 520px){
+    .actions .status{ display:none; }
+  }
+  .actions button{
+    appearance:none;
+    border: 0;
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 999px;
+    font: inherit; font-weight: 600; font-size: 14px;
+    cursor: pointer;
+    display:inline-flex; align-items:center; gap:8px;
+    transition: background var(--t), color var(--t), transform var(--t);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .actions .btn-ghost{
+    background: transparent;
+    color: #DCCDB6;
+  }
+  .actions .btn-ghost:hover{ background: rgba(255,255,255,.08); color: #FBF6EE; }
+  .actions .btn-primary{
+    background: var(--accent);
+    color: #fff;
+  }
+  .actions .btn-primary:hover{ background: oklch(0.58 0.18 28); }
+  .actions .btn-primary:active{ transform: translateY(1px); }
+
+  .actions svg{ width:16px; height:16px; }
+
+  /* small chip toast when copied */
+  .toast{
+    position: fixed;
+    left:50%; transform: translate(-50%, 30px);
+    bottom: 80px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--sage-ink);
+    color: #fff;
+    font-size: 13px; font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease, transform 300ms cubic-bezier(.2,.7,.2,1);
+    z-index: 60;
+    box-shadow: 0 10px 24px -6px rgba(0,0,0,.35);
+  }
+  .toast.show{
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* small dough-ball illustration tile */
+  .balls-viz{
+    display:flex; align-items:center; gap: 14px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--rule-soft);
+    background: linear-gradient(180deg, #FBF6EE, #F4ECDC);
+  }
+  .balls-viz .balls-row{
+    display:flex; align-items:center; gap: 4px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+  }
+  .ball{
+    width: 28px; height: 28px;
+    border-radius:50%;
+    background: radial-gradient(circle at 30% 28%, #F8E3BF, #DBB57A 70%, #B4884E);
+    box-shadow: 0 1px 0 rgba(0,0,0,.05), inset 0 -2px 0 rgba(0,0,0,.06);
+    flex: 0 0 auto;
+    transition: transform var(--t), opacity var(--t);
+    animation: pop var(--t) both;
+  }
+  .ball.small{ width:20px; height:20px; }
+  .ball.xs{ width:14px; height:14px; }
+  @keyframes pop{
+    from{ transform: scale(.3); opacity: 0; }
+    to{ transform: scale(1); opacity: 1; }
+  }
+  .balls-viz .meta{
+    font-family:"Geist Mono", ui-monospace, monospace;
+    font-size: 12.5px; color: var(--ink-2);
+    white-space: nowrap;
+  }
+
+  /* Reduce motion */
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot" aria-hidden="true"></span>
+        <span>Pizza Dough Calculator</span>
+      </div>
+      <div class="meta">
+        <span class="pill"><span class="swatch"></span> Poolish &middot; 100% hydration</span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1>
+        Pizza dough, <em>calculated</em>.
+      </h1>
+      <p class="lede">
+        Dial in batch size, hydration, poolish weight, and salt. The totals stay tied
+        to the final dough &mdash; with a 100% hydration poolish split out from the
+        final mix.
+      </p>
+    </section>
+
+    <!-- Composition visualization -->
+    <section class="composition" aria-label="Recipe composition">
+      <div class="comp-head">
+        <span>Composition &middot; baker&rsquo;s percentage</span>
+        <span class="target">target <b id="targetReadout">1000g</b></span>
+      </div>
+      <div class="bar" id="compBar" role="img" aria-label="Stacked bar of flour, water, and salt by weight">
+        <div class="seg flour" style="flex-basis:60%">
+          <span class="seg-text"><span class="lbl">Flour</span><span class="val" id="segFlour">597g</span></span>
+        </div>
+        <div class="seg water" style="flex-basis:38%">
+          <span class="seg-text"><span class="lbl">Water</span><span class="val" id="segWater">388g</span></span>
+        </div>
+        <div class="seg salt" style="flex-basis:2%">
+          <span class="seg-text"><span class="lbl"></span><span class="val" id="segSalt">15g</span></span>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="item"><span class="key flour"></span> Flour <b id="legendFlour">597g</b></div>
+        <div class="item"><span class="key water"></span> Water <b id="legendWater">388g</b></div>
+        <div class="item"><span class="key salt"></span> Salt <b id="legendSalt">15g</b></div>
+        <div class="item" style="margin-left:auto"><span class="key" style="background: var(--sage); border-radius:50%"></span> Poolish <b id="legendPoolish">200g</b></div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <!-- Controls panel -->
+      <section class="panel" aria-label="Calculator inputs">
+        <header class="panel-head">
+          <h2>Recipe inputs</h2>
+          <span class="hint">live</span>
+        </header>
+
+        <div class="balls-viz" id="ballsViz" aria-hidden="true">
+          <div class="balls-row" id="ballsRow"></div>
+          <div class="meta" id="ballsMeta">4 &times; 250g</div>
+        </div>
+
+        <div class="controls">
+
+          <div class="field">
+            <div class="field-head">
+              <span class="label">Batch size</span>
+              <span class="unit">choose mode</span>
+            </div>
+            <div class="segment" role="radiogroup" aria-label="Batch size mode">
+              <label>
+                <input id="modeBalls" type="radio" name="batchMode" value="balls" checked>
+                <span class="seg-btn">Dough balls</span>
               </label>
-              <label for="modeTotal">
-                <input id="modeTotal" name="batchMode" type="radio" value="total">
-                <span>Total dough</span>
+              <label>
+                <input id="modeTotal" type="radio" name="batchMode" value="total">
+                <span class="seg-btn">Total dough</span>
               </label>
-            </fieldset>
-
-            <label class="balls-control" for="balls">
-              <span>Dough balls <small>quantity</small></span>
-              <input id="balls" name="balls" type="number" inputmode="numeric" min="1" step="1" value="4">
-            </label>
-
-            <label class="balls-control" for="ballWeight">
-              <span>Ball weight <small>grams each</small></span>
-              <input id="ballWeight" name="ballWeight" type="number" inputmode="decimal" min="1" step="1" value="250">
-            </label>
-
-            <label class="total-control is-hidden" for="totalWeight">
-              <span>Total dough <small>grams</small></span>
-              <input id="totalWeight" name="totalWeight" type="number" inputmode="decimal" min="1" step="1" value="1000">
-            </label>
-
-            <label for="hydration">
-              <span>Hydration <small>%</small></span>
-              <input id="hydration" name="hydration" type="number" inputmode="decimal" min="0.1" step="0.1" value="65">
-            </label>
-
-            <label for="poolish">
-              <span>Poolish <small>grams, total weight</small></span>
-              <input id="poolish" name="poolish" type="number" inputmode="decimal" min="0" step="1" value="200">
-            </label>
-
-            <label class="salt-control" for="salt">
-              <span>Salt <small>% of total flour</small></span>
-              <input id="salt" name="salt" type="number" inputmode="decimal" min="0" step="0.1" value="2.5">
-            </label>
-          </div>
-
-          <div class="share-panel">
-            <span id="shareStatus" aria-live="polite">The page URL updates as you edit the recipe.</span>
-            <div class="share-actions">
-              <button id="resetButton" class="secondary-button" type="button">Reset defaults</button>
-              <button id="shareButton" type="button">Copy recipe link</button>
             </div>
           </div>
 
-          <div id="message" class="notice" role="status" hidden></div>
-
-          <div class="results" aria-live="polite">
-            <article class="card" aria-labelledby="total-heading">
-              <h2 id="total-heading">Total recipe</h2>
-              <div class="line-item">
-                <span>Total dough</span>
-                <strong id="totalDough">1000g</strong>
+          <!-- balls mode: balls + ball weight -->
+          <div class="field balls-control">
+            <div class="pair">
+              <div>
+                <div class="field-head">
+                  <span class="label">Dough balls</span>
+                  <span class="unit">quantity</span>
+                </div>
+                <div class="stepper">
+                  <button type="button" data-step="balls" data-dir="-1" aria-label="Fewer balls">&minus;</button>
+                  <input id="balls" type="number" inputmode="numeric" min="1" step="1" value="4">
+                  <button type="button" data-step="balls" data-dir="1" aria-label="More balls">+</button>
+                </div>
               </div>
-              <div class="line-item">
-                <span>Total flour</span>
-                <strong id="totalFlour">597g</strong>
+              <div>
+                <div class="field-head">
+                  <span class="label">Ball weight</span>
+                  <span class="unit">grams each</span>
+                </div>
+                <div class="stepper">
+                  <button type="button" data-step="ballWeight" data-dir="-5" aria-label="Lighter">&minus;</button>
+                  <input id="ballWeight" type="number" inputmode="decimal" min="1" step="5" value="250">
+                  <button type="button" data-step="ballWeight" data-dir="5" aria-label="Heavier">+</button>
+                </div>
               </div>
-              <div class="line-item">
-                <span>Total water</span>
-                <strong id="totalWater">388g</strong>
-              </div>
-              <div class="line-item total">
-                <span>Salt</span>
-                <strong id="saltAmount">15g</strong>
-              </div>
-            </article>
-
-            <article class="card" aria-labelledby="poolish-heading">
-              <h2 id="poolish-heading">Poolish included</h2>
-              <div class="line-item">
-                <span>Total poolish</span>
-                <strong id="poolishTotal">200g</strong>
-              </div>
-              <div class="line-item">
-                <span>Poolish flour</span>
-                <strong id="poolishFlour">100g</strong>
-              </div>
-              <div class="line-item">
-                <span>Poolish water</span>
-                <strong id="poolishWater">100g</strong>
-              </div>
-            </article>
-
-            <article class="card" aria-labelledby="mix-heading">
-              <h2 id="mix-heading">Final mix additions</h2>
-              <div class="line-item">
-                <span>Add flour</span>
-                <strong id="finalFlour">497g</strong>
-              </div>
-              <div class="line-item">
-                <span>Add water</span>
-                <strong id="finalWater">288g</strong>
-              </div>
-              <div class="line-item total">
-                <span>Add salt</span>
-                <strong id="finalSalt">15g</strong>
-              </div>
-            </article>
+            </div>
           </div>
 
-          <p class="footnote">
-            Rounded to whole grams. Because the poolish is 100% hydration,
-            half of its entered weight counts as flour and half counts as water.
-            For a 12-16 hour poolish, yeast is typically around 0.1-0.2g.
-          </p>
-        </section>
-      </div>
-    </main>
+          <!-- total mode -->
+          <div class="field total-control" hidden>
+            <div class="field-head">
+              <span class="label">Total dough</span>
+              <span class="unit">grams</span>
+            </div>
+            <div class="stepper">
+              <button type="button" data-step="totalWeight" data-dir="-50" aria-label="Less">&minus;</button>
+              <input id="totalWeight" type="number" inputmode="decimal" min="1" step="50" value="1000">
+              <button type="button" data-step="totalWeight" data-dir="50" aria-label="More">+</button>
+            </div>
+          </div>
 
-    <script>
-      const fields = {
-        balls: document.getElementById("balls"),
-        ballWeight: document.getElementById("ballWeight"),
-        totalWeight: document.getElementById("totalWeight"),
-        hydration: document.getElementById("hydration"),
-        poolish: document.getElementById("poolish"),
-        salt: document.getElementById("salt")
-      };
+          <!-- Hydration slider -->
+          <div class="field">
+            <div class="field-head">
+              <span class="label">Hydration</span>
+              <span class="value" id="hydrationValue">65%</span>
+            </div>
+            <div class="slider-row">
+              <input id="hydration" type="range" class="slider" min="40" max="100" step="0.5" value="65">
+            </div>
+            <div class="tick-row">
+              <button type="button" data-set="hydration" data-val="55">55 &middot; NY</button>
+              <button type="button" data-set="hydration" data-val="62">62 &middot; Roma</button>
+              <button type="button" data-set="hydration" data-val="65">65 &middot; Napoli</button>
+              <button type="button" data-set="hydration" data-val="75">75 &middot; Pala</button>
+            </div>
+          </div>
 
-      const modeInputs = Array.from(document.querySelectorAll('input[name="batchMode"]'));
-      const ballsControls = Array.from(document.querySelectorAll(".balls-control"));
-      const totalControls = Array.from(document.querySelectorAll(".total-control"));
-      const doughMarkText = document.getElementById("doughMarkText");
-      const resetButton = document.getElementById("resetButton");
-      const shareButton = document.getElementById("shareButton");
-      const shareStatus = document.getElementById("shareStatus");
+          <!-- Poolish weight -->
+          <div class="field">
+            <div class="field-head">
+              <span class="label">Poolish</span>
+              <span class="unit">grams &middot; 100% hydration</span>
+            </div>
+            <div class="stepper">
+              <button type="button" data-step="poolish" data-dir="-10" aria-label="Less poolish">&minus;</button>
+              <input id="poolish" type="number" inputmode="decimal" min="0" step="10" value="200">
+              <button type="button" data-step="poolish" data-dir="10" aria-label="More poolish">+</button>
+            </div>
+            <div class="tick-row">
+              <button type="button" data-set="poolish" data-val="0">none</button>
+              <button type="button" data-set="poolish" data-val="100">100g</button>
+              <button type="button" data-set="poolish" data-val="200">200g</button>
+              <button type="button" data-set="poolish" data-val="400">400g</button>
+            </div>
+          </div>
 
-      const defaults = {
-        mode: "balls",
-        balls: "4",
-        ballWeight: "250",
-        totalWeight: "1000",
-        hydration: "65",
-        poolish: "200",
-        salt: "2.5"
-      };
+          <!-- Salt slider -->
+          <div class="field">
+            <div class="field-head">
+              <span class="label">Salt</span>
+              <span class="value" id="saltValue">2.5%</span>
+            </div>
+            <div class="slider-row">
+              <input id="salt" type="range" class="slider" min="0" max="5" step="0.1" value="2.5">
+            </div>
+            <div class="tick-row">
+              <span>0%</span>
+              <span>2.5%</span>
+              <span>5%</span>
+            </div>
+          </div>
 
-      const fieldParams = {
-        balls: "balls",
-        ballWeight: "ballWeight",
-        totalWeight: "total",
-        hydration: "hydration",
-        poolish: "poolish",
-        salt: "salt"
-      };
+        </div>
+      </section>
 
-      const outputs = {
-        totalDough: document.getElementById("totalDough"),
-        totalFlour: document.getElementById("totalFlour"),
-        totalWater: document.getElementById("totalWater"),
-        saltAmount: document.getElementById("saltAmount"),
-        poolishTotal: document.getElementById("poolishTotal"),
-        poolishFlour: document.getElementById("poolishFlour"),
-        poolishWater: document.getElementById("poolishWater"),
-        finalFlour: document.getElementById("finalFlour"),
-        finalWater: document.getElementById("finalWater"),
-        finalSalt: document.getElementById("finalSalt")
-      };
+      <!-- Results panel -->
+      <section class="panel" aria-label="Computed recipe">
+        <header class="panel-head">
+          <h2>The recipe</h2>
+          <span class="hint" id="hintReadout">rounded to whole grams</span>
+        </header>
 
-      const message = document.getElementById("message");
+        <div id="message" class="notice" role="status" hidden></div>
 
-      function readNumber(input) {
-        return Number.parseFloat(input.value);
-      }
+        <div class="headline">
+          <div class="row">
+            <div class="stat">
+              <span class="k">Total dough</span>
+              <span class="v num" id="bigDough" data-target="1000">1000g</span>
+            </div>
+            <div class="stat accent">
+              <span class="k">Total flour</span>
+              <span class="v num" id="bigFlour" data-target="597">597g</span>
+            </div>
+            <div class="stat sage">
+              <span class="k">Total water</span>
+              <span class="v num" id="bigWater" data-target="388">388g</span>
+            </div>
+          </div>
+        </div>
 
-      function grams(value) {
-        return `${Math.round(value)}g`;
-      }
+        <div class="results">
+          <div class="result-card">
+            <div class="head">
+              <span class="name">Poolish</span>
+              <span class="tag">make 12&ndash;16h ahead</span>
+            </div>
+            <div class="lines">
+              <div class="line"><span class="lbl">Flour</span><span class="num" id="poolishFlour" data-target="100">100g</span></div>
+              <div class="line"><span class="lbl">Water</span><span class="num" id="poolishWater" data-target="100">100g</span></div>
+              <div class="line"><span class="lbl">Yeast (instant)</span><span class="num" id="poolishYeast" data-target="0">0.2g</span></div>
+              <div class="line total"><span class="lbl">Poolish weight</span><span class="num" id="poolishTotal" data-target="200">200g</span></div>
+            </div>
+          </div>
 
-      function getBatchMode() {
-        return document.querySelector('input[name="batchMode"]:checked').value;
-      }
+          <div class="result-card featured">
+            <div class="head">
+              <span class="name">Final mix</span>
+              <span class="tag">day of</span>
+            </div>
+            <div class="lines">
+              <div class="line"><span class="lbl">Add flour</span><span class="num" id="finalFlour" data-target="497">497g</span></div>
+              <div class="line"><span class="lbl">Add water</span><span class="num" id="finalWater" data-target="288">288g</span></div>
+              <div class="line"><span class="lbl">Add salt</span><span class="num" id="finalSalt" data-target="15">15g</span></div>
+              <div class="line total"><span class="lbl">+ all poolish</span><span class="num" id="finalPoolish" data-target="200">200g</span></div>
+            </div>
+          </div>
 
-      function applyUrlParams() {
-        const params = new URLSearchParams(window.location.search);
-        const mode = params.get("mode");
+          <div class="result-card">
+            <div class="head">
+              <span class="name">Salt &amp; totals</span>
+              <span class="tag">reference</span>
+            </div>
+            <div class="lines">
+              <div class="line"><span class="lbl">Salt</span><span class="num" id="saltAmount" data-target="15">15g</span></div>
+              <div class="line"><span class="lbl">Flour share of dough</span><span class="num" id="flourPct" data-target="59.7">59.7%</span></div>
+              <div class="line"><span class="lbl">Water share of dough</span><span class="num" id="waterPct" data-target="38.8">38.8%</span></div>
+            </div>
+          </div>
+        </div>
 
-        if (mode === "balls" || mode === "total") {
-          document.querySelector(`input[name="batchMode"][value="${mode}"]`).checked = true;
-        }
+        <p class="footnote">
+          Because the poolish is 100% hydration, half of its weight counts as flour and half
+          as water. Yeast suggestion is for a 12&ndash;16h cool ferment &mdash; adjust to room temperature.
+        </p>
+      </section>
+    </div>
+  </div>
 
-        Object.entries(fieldParams).forEach(([fieldName, paramName]) => {
-          const value = params.get(paramName);
+  <!-- Sticky action bar -->
+  <div class="actions" role="region" aria-label="Recipe actions">
+    <span class="status" id="shareStatus">URL stays synced with your recipe</span>
+    <button id="resetButton" class="btn-ghost" type="button" aria-label="Reset to defaults">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      Reset
+    </button>
+    <button id="shareButton" class="btn-primary" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+      Copy link
+    </button>
+  </div>
 
-          if (value !== null) {
-            fields[fieldName].value = value;
-          }
-        });
-      }
+  <div class="toast" id="toast">Link copied</div>
 
-      function buildRecipeUrl() {
-        const url = new URL(window.location.href);
-        const params = new URLSearchParams();
+<script>
+/* ───────── Data + DOM refs ───────── */
+const fields = {
+  balls:       document.getElementById("balls"),
+  ballWeight:  document.getElementById("ballWeight"),
+  totalWeight: document.getElementById("totalWeight"),
+  hydration:   document.getElementById("hydration"),
+  poolish:     document.getElementById("poolish"),
+  salt:        document.getElementById("salt"),
+};
+const modeInputs = Array.from(document.querySelectorAll('input[name="batchMode"]'));
+const ballsControls = Array.from(document.querySelectorAll(".balls-control"));
+const totalControls = Array.from(document.querySelectorAll(".total-control"));
+const shareButton = document.getElementById("shareButton");
+const resetButton = document.getElementById("resetButton");
+const shareStatus = document.getElementById("shareStatus");
+const toast = document.getElementById("toast");
+const messageEl = document.getElementById("message");
 
-        params.set("mode", getBatchMode());
+const defaults = {
+  mode: "balls",
+  balls: "4", ballWeight: "250", totalWeight: "1000",
+  hydration: "65", poolish: "200", salt: "2.5",
+};
+const fieldParams = {
+  balls: "balls", ballWeight: "ballWeight", totalWeight: "total",
+  hydration: "hydration", poolish: "poolish", salt: "salt",
+};
 
-        Object.entries(fieldParams).forEach(([fieldName, paramName]) => {
-          const value = fields[fieldName].value.trim();
+/* ───────── Helpers ───────── */
+const num = v => Number.parseFloat(v);
+const fmt = (v, suffix="g") => {
+  if (!Number.isFinite(v)) return "—";
+  const rounded = Math.round(v);
+  return rounded.toLocaleString() + suffix;
+};
+const fmt1 = (v, suffix="%") => {
+  if (!Number.isFinite(v)) return "—";
+  return v.toFixed(1) + suffix;
+};
+function getBatchMode(){
+  return document.querySelector('input[name="batchMode"]:checked').value;
+}
 
-          if (value !== "") {
-            params.set(paramName, value);
-          }
-        });
+/* ───────── URL params ───────── */
+function applyUrlParams(){
+  const p = new URLSearchParams(location.search);
+  const m = p.get("mode");
+  if (m === "balls" || m === "total"){
+    document.querySelector(`input[name="batchMode"][value="${m}"]`).checked = true;
+  }
+  Object.entries(fieldParams).forEach(([k, q]) => {
+    const v = p.get(q);
+    if (v !== null) fields[k].value = v;
+  });
+}
+function buildUrl(){
+  const u = new URL(location.href);
+  const p = new URLSearchParams();
+  p.set("mode", getBatchMode());
+  Object.entries(fieldParams).forEach(([k, q]) => {
+    const v = String(fields[k].value).trim();
+    if (v !== "") p.set(q, v);
+  });
+  u.search = p.toString();
+  u.hash = "";
+  return u.toString();
+}
+function updateUrl(){
+  if (history.replaceState) history.replaceState(null, "", buildUrl());
+}
 
-        url.search = params.toString();
-        url.hash = "";
-        return url.toString();
-      }
+/* ───────── Number tween for big results ───────── */
+const tweenState = new Map();
+function tweenNumber(el, to, suffix="g"){
+  const from = tweenState.get(el) ?? to;
+  tweenState.set(el, to);
+  const start = performance.now();
+  const dur = 360;
+  const isPct = suffix === "%";
+  function frame(t){
+    const k = Math.min(1, (t - start) / dur);
+    const eased = 1 - Math.pow(1 - k, 3);
+    const v = from + (to - from) * eased;
+    el.textContent = isPct ? fmt1(v, suffix) : fmt(v, suffix);
+    if (k < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
 
-      function updateAddressBar() {
-        if (window.history && window.history.replaceState) {
-          window.history.replaceState(null, "", buildRecipeUrl());
-        }
-      }
+/* ───────── Composition bar ───────── */
+const segFlour = document.getElementById("segFlour");
+const segWater = document.getElementById("segWater");
+const segSalt  = document.getElementById("segSalt");
+const compBar  = document.getElementById("compBar");
+const segs = compBar.querySelectorAll(".seg");
 
-      async function copyRecipeLink() {
-        const url = buildRecipeUrl();
+function paintBar(flour, water, salt){
+  const total = Math.max(1, flour + water + salt);
+  const fp = flour / total * 100;
+  const wp = water / total * 100;
+  const sp = salt  / total * 100;
+  segs[0].style.flexBasis = fp + "%";
+  segs[1].style.flexBasis = wp + "%";
+  segs[2].style.flexBasis = sp + "%";
+  segFlour.textContent = fmt(flour);
+  segWater.textContent = fmt(water);
+  segSalt.textContent  = fmt(salt);
+}
 
-        try {
-          if (!navigator.clipboard) {
-            throw new Error("Clipboard API unavailable");
-          }
+/* ───────── Balls illustration ───────── */
+const ballsRow = document.getElementById("ballsRow");
+const ballsMeta = document.getElementById("ballsMeta");
+function paintBalls(n, weight){
+  const cap = 24;
+  const sizeClass = n > 16 ? "xs" : n > 9 ? "small" : "";
+  const count = Math.min(cap, Math.max(0, n));
+  ballsRow.innerHTML = "";
+  for (let i = 0; i < count; i++){
+    const b = document.createElement("span");
+    b.className = "ball " + sizeClass;
+    b.style.animationDelay = (i * 22) + "ms";
+    ballsRow.appendChild(b);
+  }
+  if (n > cap){
+    const more = document.createElement("span");
+    more.className = "meta";
+    more.style.marginLeft = "6px";
+    more.textContent = "+" + (n - cap);
+    ballsRow.appendChild(more);
+  }
+  ballsMeta.textContent = `${n} × ${Math.round(weight)}g`;
+}
 
-          await navigator.clipboard.writeText(url);
-          shareStatus.textContent = "Recipe link copied.";
-        } catch {
-          shareStatus.textContent = "Copy the URL from the address bar to share this recipe.";
-        }
-      }
+/* ───────── Hydration / salt readouts ───────── */
+function paintSliderFill(input){
+  const min = +input.min, max = +input.max;
+  const v = +input.value;
+  const p = (v - min) / (max - min) * 100;
+  input.style.setProperty("--p", p + "%");
+}
 
-      function resetDefaults() {
-        document.querySelector(`input[name="batchMode"][value="${defaults.mode}"]`).checked = true;
+/* ───────── Mode controls ───────── */
+function updateBatchControls(syncTotalFromBalls = false){
+  const mode = getBatchMode();
+  const usingBalls = mode === "balls";
+  ballsControls.forEach(c => c.hidden = !usingBalls);
+  totalControls.forEach(c => c.hidden = usingBalls);
+  if (!usingBalls && syncTotalFromBalls){
+    const b = num(fields.balls.value), w = num(fields.ballWeight.value);
+    if (b > 0 && w > 0) fields.totalWeight.value = Math.round(b * w);
+  }
+}
 
-        Object.entries(defaults).forEach(([fieldName, value]) => {
-          if (fieldName !== "mode") {
-            fields[fieldName].value = value;
-          }
-        });
+/* ───────── Compute ───────── */
+function showMessage(text){
+  messageEl.textContent = text || "";
+  messageEl.hidden = !text;
+}
+function clearOutputs(){
+  document.querySelectorAll(".num[data-target]").forEach(el => el.textContent = "—");
+  paintBar(1,0,0);
+}
 
-        updateBatchControls();
-        calculate();
-        updateAddressBar();
-        shareStatus.textContent = "Defaults restored.";
-      }
+function calculate(){
+  const mode = getBatchMode();
+  const balls = num(fields.balls.value);
+  const bw = num(fields.ballWeight.value);
+  const tw = num(fields.totalWeight.value);
+  const hyd = num(fields.hydration.value);
+  const pool = num(fields.poolish.value);
+  const saltP = num(fields.salt.value);
 
-      function showMessage(text) {
-        message.textContent = text;
-        message.hidden = !text;
-      }
+  let target;
+  if (mode === "balls"){
+    if (!(balls > 0)) return showMessage("Enter at least one dough ball."), clearOutputs();
+    if (!(bw > 0))    return showMessage("Ball weight must be greater than 0g."), clearOutputs();
+    target = balls * bw;
+  } else {
+    if (!(tw > 0))    return showMessage("Total dough weight must be greater than 0g."), clearOutputs();
+    target = tw;
+  }
+  if (!(hyd > 0))     return showMessage("Hydration must be greater than 0%."), clearOutputs();
+  if (!(pool >= 0))   return showMessage("Poolish must be 0g or more."), clearOutputs();
+  if (!(saltP >= 0))  return showMessage("Salt must be 0% or more."), clearOutputs();
 
-      function clearOutputs() {
-        Object.values(outputs).forEach((output) => {
-          output.textContent = "--";
-        });
-      }
+  const H = hyd / 100;
+  const S = saltP / 100;
+  const totalFlour = target / (1 + H + S);
+  const totalWater = totalFlour * H;
+  const salt       = totalFlour * S;
+  const poolFlour  = pool / 2;
+  const poolWater  = pool / 2;
+  const finalFlour = totalFlour - poolFlour;
+  const finalWater = totalWater - poolWater;
 
-      function setOutputs(values) {
-        outputs.totalDough.textContent = grams(values.targetDough);
-        outputs.totalFlour.textContent = grams(values.totalFlour);
-        outputs.totalWater.textContent = grams(values.totalWater);
-        outputs.saltAmount.textContent = grams(values.salt);
-        outputs.poolishTotal.textContent = grams(values.poolishGrams);
-        outputs.poolishFlour.textContent = grams(values.poolishFlour);
-        outputs.poolishWater.textContent = grams(values.poolishWater);
-        outputs.finalFlour.textContent = grams(values.finalFlour);
-        outputs.finalWater.textContent = grams(values.finalWater);
-        outputs.finalSalt.textContent = grams(values.salt);
-      }
+  if (finalFlour < 0 || finalWater < 0){
+    showMessage("The poolish is too large for this batch and hydration. Reduce poolish or increase batch size.");
+    clearOutputs();
+    return;
+  }
+  showMessage("");
 
-      function syncTotalWeightFromBalls() {
-        const balls = readNumber(fields.balls);
-        const ballWeight = readNumber(fields.ballWeight);
+  // Yeast suggestion: ~0.15% of poolish flour for 12-16h cool ferment, min .05
+  const yeast = pool > 0 ? Math.max(0.05, poolFlour * 0.0015) : 0;
 
-        if (Number.isFinite(balls) && balls > 0 && Number.isFinite(ballWeight) && ballWeight > 0) {
-          fields.totalWeight.value = Math.round(balls * ballWeight);
-        }
-      }
+  // Update big numbers (tweened)
+  tweenNumber(document.getElementById("bigDough"), target);
+  tweenNumber(document.getElementById("bigFlour"), totalFlour);
+  tweenNumber(document.getElementById("bigWater"), totalWater);
 
-      function updateBatchControls(syncTotalFromBalls = false) {
-        const mode = getBatchMode();
-        const usingBalls = mode === "balls";
+  tweenNumber(document.getElementById("saltAmount"), salt);
+  tweenNumber(document.getElementById("flourPct"), totalFlour / target * 100, "%");
+  tweenNumber(document.getElementById("waterPct"), totalWater / target * 100, "%");
 
-        ballsControls.forEach((control) => {
-          control.classList.toggle("is-hidden", !usingBalls);
-        });
-        totalControls.forEach((control) => {
-          control.classList.toggle("is-hidden", usingBalls);
-        });
+  tweenNumber(document.getElementById("poolishFlour"), poolFlour);
+  tweenNumber(document.getElementById("poolishWater"), poolWater);
+  tweenNumber(document.getElementById("poolishTotal"), pool);
 
-        if (!usingBalls) {
-          if (syncTotalFromBalls) {
-            syncTotalWeightFromBalls();
-          }
-          doughMarkText.textContent = "total dough";
-        } else {
-          const ballWeight = readNumber(fields.ballWeight);
-          doughMarkText.textContent = Number.isFinite(ballWeight) && ballWeight > 0
-            ? `${Math.round(ballWeight)}g each`
-            : "grams each";
-        }
-      }
+  document.getElementById("poolishYeast").textContent = pool > 0
+    ? (yeast < 1 ? yeast.toFixed(2) + "g" : yeast.toFixed(1) + "g")
+    : "—";
 
-      function calculate() {
-        const mode = getBatchMode();
-        const balls = readNumber(fields.balls);
-        const ballWeight = readNumber(fields.ballWeight);
-        const totalWeight = readNumber(fields.totalWeight);
-        const hydrationPercent = readNumber(fields.hydration);
-        const poolishGrams = readNumber(fields.poolish);
-        const saltPercent = readNumber(fields.salt);
+  tweenNumber(document.getElementById("finalFlour"), finalFlour);
+  tweenNumber(document.getElementById("finalWater"), finalWater);
+  tweenNumber(document.getElementById("finalSalt"), salt);
+  tweenNumber(document.getElementById("finalPoolish"), pool);
 
-        let targetDough;
+  document.getElementById("targetReadout").textContent = fmt(target);
+  document.getElementById("legendFlour").textContent = fmt(totalFlour);
+  document.getElementById("legendWater").textContent = fmt(totalWater);
+  document.getElementById("legendSalt").textContent  = fmt(salt);
+  document.getElementById("legendPoolish").textContent = fmt(pool);
 
-        if (mode === "balls") {
-          if (!Number.isFinite(balls) || balls <= 0) {
-            showMessage("Enter at least one dough ball.");
-            clearOutputs();
-            return;
-          }
+  paintBar(totalFlour, totalWater, salt);
+  paintBalls(Math.max(1, Math.round(balls)), bw);
 
-          if (!Number.isFinite(ballWeight) || ballWeight <= 0) {
-            showMessage("Ball weight must be greater than 0g.");
-            clearOutputs();
-            return;
-          }
+  // sync slider readouts
+  document.getElementById("hydrationValue").textContent = (+fields.hydration.value).toFixed(fields.hydration.value % 1 ? 1 : 0) + "%";
+  document.getElementById("saltValue").textContent      = (+fields.salt.value).toFixed(fields.salt.value % 1 ? 1 : 0) + "%";
+  paintSliderFill(fields.hydration);
+  paintSliderFill(fields.salt);
+}
 
-          targetDough = balls * ballWeight;
-        } else {
-          if (!Number.isFinite(totalWeight) || totalWeight <= 0) {
-            showMessage("Total dough weight must be greater than 0g.");
-            clearOutputs();
-            return;
-          }
+/* ───────── Listeners ───────── */
+Object.values(fields).forEach(field => {
+  field.addEventListener("input", () => {
+    if (getBatchMode() === "balls" && (field === fields.balls || field === fields.ballWeight)){
+      const b = num(fields.balls.value), w = num(fields.ballWeight.value);
+      if (b > 0 && w > 0) fields.totalWeight.value = Math.round(b * w);
+    }
+    calculate();
+    updateUrl();
+    shareStatus.textContent = "URL stays synced with your recipe";
+  });
+});
 
-          targetDough = totalWeight;
-        }
+modeInputs.forEach(input => {
+  input.addEventListener("change", () => {
+    updateBatchControls(input.value === "total");
+    calculate();
+    updateUrl();
+  });
+});
 
-        if (!Number.isFinite(hydrationPercent) || hydrationPercent <= 0) {
-          showMessage("Hydration must be greater than 0%.");
-          clearOutputs();
-          return;
-        }
+// Stepper buttons
+document.querySelectorAll("[data-step]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const key = btn.dataset.step;
+    const dir = parseFloat(btn.dataset.dir);
+    const input = fields[key];
+    const cur = num(input.value) || 0;
+    const min = input.min !== "" ? parseFloat(input.min) : -Infinity;
+    let next = cur + dir;
+    if (next < min) next = min;
+    if (input.step === "1") next = Math.round(next);
+    input.value = next;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+});
 
-        if (!Number.isFinite(poolishGrams) || poolishGrams < 0) {
-          showMessage("Poolish must be 0g or more.");
-          clearOutputs();
-          return;
-        }
+// Quick-set chips
+document.querySelectorAll("[data-set]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const key = btn.dataset.set;
+    const val = btn.dataset.val;
+    if (fields[key]){
+      fields[key].value = val;
+      fields[key].dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+});
 
-        if (!Number.isFinite(saltPercent) || saltPercent < 0) {
-          showMessage("Salt must be 0% or more.");
-          clearOutputs();
-          return;
-        }
+// Reset
+resetButton.addEventListener("click", () => {
+  document.querySelector(`input[name="batchMode"][value="${defaults.mode}"]`).checked = true;
+  Object.entries(defaults).forEach(([k, v]) => { if (k !== "mode") fields[k].value = v; });
+  updateBatchControls();
+  calculate();
+  updateUrl();
+  shareStatus.textContent = "Defaults restored";
+});
 
-        const hydration = hydrationPercent / 100;
-        const saltRate = saltPercent / 100;
-        const totalFlour = targetDough / (1 + hydration + saltRate);
-        const totalWater = totalFlour * hydration;
-        const salt = totalFlour * saltRate;
-        const poolishFlour = poolishGrams / 2;
-        const poolishWater = poolishGrams / 2;
-        const finalFlour = totalFlour - poolishFlour;
-        const finalWater = totalWater - poolishWater;
+// Share
+async function copyLink(){
+  const url = buildUrl();
+  try {
+    if (!navigator.clipboard) throw 0;
+    await navigator.clipboard.writeText(url);
+    flashToast("Link copied");
+    shareStatus.textContent = "Recipe link copied";
+  } catch {
+    shareStatus.textContent = "Copy the URL from the address bar";
+    flashToast("Copy from address bar");
+  }
+}
+shareButton.addEventListener("click", copyLink);
+function flashToast(text){
+  toast.textContent = text;
+  toast.classList.add("show");
+  clearTimeout(flashToast._t);
+  flashToast._t = setTimeout(() => toast.classList.remove("show"), 1600);
+}
 
-        if (finalFlour < 0 || finalWater < 0) {
-          showMessage("That poolish is too large for this batch and hydration. Reduce the poolish amount or increase the dough size.");
-          clearOutputs();
-          return;
-        }
-
-        showMessage("");
-        setOutputs({
-          targetDough,
-          totalFlour,
-          totalWater,
-          salt,
-          poolishGrams,
-          poolishFlour,
-          poolishWater,
-          finalFlour,
-          finalWater
-        });
-      }
-
-      Object.values(fields).forEach((field) => {
-        field.addEventListener("input", () => {
-          if (getBatchMode() === "balls" && (field === fields.balls || field === fields.ballWeight)) {
-            syncTotalWeightFromBalls();
-          }
-          updateBatchControls();
-          calculate();
-          updateAddressBar();
-          shareStatus.textContent = "The page URL updates as you edit the recipe.";
-        });
-      });
-
-      modeInputs.forEach((input) => {
-        input.addEventListener("change", () => {
-          updateBatchControls(input.value === "total");
-          calculate();
-          updateAddressBar();
-          shareStatus.textContent = "The page URL updates as you edit the recipe.";
-        });
-      });
-
-      shareButton.addEventListener("click", copyRecipeLink);
-      resetButton.addEventListener("click", resetDefaults);
-
-      applyUrlParams();
-      updateBatchControls();
-      calculate();
-      updateAddressBar();
-    </script>
-  </body>
+/* ───────── Init ───────── */
+applyUrlParams();
+updateBatchControls();
+calculate();
+updateUrl();
+</script>
+</body>
 </html>
