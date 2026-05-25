@@ -71,19 +71,23 @@
   .topbar{
     display:flex; align-items:center; justify-content:space-between;
     gap:12px;
-    padding: 6px 4px 22px;
+    padding: 6px 4px 18px;
   }
   .brand{
-    display:flex; align-items:center; gap:10px;
+    display:flex; align-items:center; gap:12px;
     font-family:"Instrument Serif", Georgia, serif;
-    font-size: 22px;
-    letter-spacing:.01em;
+    font-size: 34px;
+    line-height: 1.1;
+    letter-spacing:.005em;
   }
-  .brand .dot{
-    width:10px; height:10px; border-radius:50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 4px rgba(224,67,42,.12);
+  .brand .brand-mark{
+    width: 53px; height: 53px;
+    border-radius: 50%;
+    object-fit: cover;
+    mix-blend-mode: multiply;
+    box-shadow: 0 6px 16px -8px rgba(70,40,15,.4);
   }
+  body[data-theme="charcoal"] .brand .brand-mark{ mix-blend-mode: normal; }
   .topbar .meta{
     display:flex; gap:8px; align-items:center;
     color: var(--muted);
@@ -103,31 +107,63 @@
   .pill .swatch{ width:8px; height:8px; border-radius:50%; background: var(--accent); }
 
   /* ───────── Hero ───────── */
-  .hero{ padding: 8px 4px 28px; }
+  .hero{
+    padding: 4px 4px 6px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: clamp(18px, 4vw, 36px);
+    row-gap: 4px;
+  }
+  .hero-art{
+    width: clamp(120px, 18vw, 200px);
+    aspect-ratio: 1;
+    position: relative;
+    grid-row: span 2;
+  }
+  .hero-art::before{
+    content: "";
+    position: absolute; inset: -6%;
+    background: radial-gradient(60% 60% at 50% 55%, rgba(217,179,106,.38), transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+  }
+  .hero-art img{
+    position: relative;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 14px 24px rgba(70,40,15,.18));
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="charcoal"] .hero-art img{ mix-blend-mode: normal; filter: drop-shadow(0 14px 24px rgba(0,0,0,.5)); }
+  .hero-text{ min-width: 0; }
   .hero h1{
     font-family:"Instrument Serif", Georgia, serif;
     font-weight: 400;
     margin: 0;
-    font-size: clamp(48px, 9.5vw, 124px);
-    line-height: .92;
-    letter-spacing: -0.02em;
+    font-size: clamp(56px, 11vw, 132px);
+    line-height: .9;
+    letter-spacing: -0.025em;
     color: var(--ink);
   }
-  .hero h1 em{
-    font-style: italic;
-    color: var(--accent-ink);
-  }
+  .hero h1 em{ font-style: italic; color: var(--accent-ink); }
   .hero .lede{
-    margin: 18px 0 0;
-    max-width: 58ch;
+    margin: 8px 0 0;
+    max-width: 52ch;
     color: var(--ink-2);
-    font-size: clamp(15px, 2vw, 17px);
+    font-size: clamp(14.5px, 1.6vw, 16px);
     line-height: 1.55;
+  }
+  @media (max-width: 640px){
+    .hero{ column-gap: 14px; }
+    .hero-art{ width: 84px; grid-row: span 1; }
+    .hero h1{ font-size: clamp(40px, 12vw, 72px); }
+    .hero .lede{ grid-column: 1 / -1; margin-top: 8px; }
   }
 
   /* ───────── Composition bar ───────── */
   .composition{
-    margin: 28px 4px 8px;
+    margin: 18px 4px 8px;
     padding: 18px;
     border-radius: var(--radius-lg);
     background: linear-gradient(180deg, var(--paper), #F8F1E4);
@@ -335,9 +371,12 @@
 
   .pair{
     display:grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 12px;
   }
+  .pair > *{ min-width: 0; }
+  .pair .stepper button{ width: 44px; font-size: 20px; }
+  .pair .stepper input{ font-size: 18px; }
   @media (max-width: 480px){
     .pair{ grid-template-columns: 1fr; }
   }
@@ -571,6 +610,11 @@
     transform: translate(-50%, 0);
   }
 
+  /* Number tween animation */
+  .num.tweening{
+    /* keep stable layout */
+  }
+
   /* small dough-ball illustration tile */
   .balls-viz{
     display:flex; align-items:center; gap: 14px;
@@ -606,39 +650,144 @@
     white-space: nowrap;
   }
 
+  /* Tweaks panel host */
+  .tweak-fab{
+    position: fixed;
+    right: 16px; bottom: 16px;
+    z-index: 49;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow-md);
+    color: var(--ink);
+    cursor: pointer;
+    display:none; align-items:center; justify-content:center;
+  }
+  .tweak-fab.visible{ display:flex; }
+  .tweak-fab svg{ width:18px; height:18px; }
+
+  .tweaks{
+    position: fixed;
+    right: 16px; bottom: 70px;
+    width: min(320px, calc(100vw - 32px));
+    border-radius: 18px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow-lg);
+    padding: 14px 14px 12px;
+    z-index: 60;
+    transform: translateY(10px); opacity: 0;
+    pointer-events: none;
+    transition: transform var(--t), opacity var(--t);
+  }
+  .tweaks.open{ transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .tweaks h4{
+    margin: 0 0 10px;
+    font-family:"Instrument Serif", Georgia, serif;
+    font-weight: 400;
+    font-size: 18px;
+  }
+  .tweaks .row{ display:grid; gap:8px; margin-bottom: 10px; }
+  .tweaks .row > .lab{
+    font-size: 11px; letter-spacing:.12em; text-transform: uppercase;
+    color: var(--muted); font-weight:600;
+  }
+  .tweaks .swatches{ display:flex; gap:8px; flex-wrap: wrap; }
+  .tweaks .swatches button{
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 2px solid transparent;
+    cursor:pointer;
+    background-clip: padding-box;
+    transition: transform var(--t), border-color var(--t);
+  }
+  .tweaks .swatches button.active{ border-color: var(--ink); transform: scale(1.06); }
+  .tweaks .options{ display:flex; gap:6px; flex-wrap: wrap; }
+  .tweaks .options button{
+    appearance:none; border:1px solid var(--rule); background: var(--bg-2);
+    border-radius: 999px; padding: 6px 12px;
+    font: inherit; font-size: 12px; cursor:pointer;
+    color: var(--ink-2);
+  }
+  .tweaks .options button.active{ background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .tweaks .close{
+    position: absolute; top: 8px; right: 8px;
+    width: 28px; height: 28px; border-radius:50%;
+    border:0; background: transparent; cursor:pointer; color: var(--muted);
+  }
+  .tweaks .close:hover{ background: var(--bg-2); color: var(--ink); }
+
+  /* Theme variants */
+  body[data-theme="terracotta"]{
+    --bg:#F1EAE0; --paper:#FBF6EE; --bg-2:#ECE3D6; --ink:#1F1A15;
+    --accent: oklch(0.62 0.18 28); --accent-ink: oklch(0.46 0.18 28);
+  }
+  body[data-theme="charcoal"]{
+    --bg:#1C1A18; --bg-2:#26221E; --paper:#221E1A; --ink:#F4ECDD;
+    --ink-2:#C9BBA6; --muted:#8A7E70; --rule:#3A332C; --rule-soft:#2D2823;
+    --accent: oklch(0.7 0.16 28); --accent-ink: oklch(0.78 0.16 28);
+    color-scheme: dark;
+  }
+  body[data-theme="charcoal"] .stepper input,
+  body[data-theme="charcoal"] .field-head .value{ color: var(--ink); }
+  body[data-theme="charcoal"] .result-card.featured{
+    background: linear-gradient(180deg, #2B241B, #38291A);
+    border-color: rgba(224,103,73,.3);
+  }
+  body[data-theme="charcoal"] .composition,
+  body[data-theme="charcoal"] .panel{
+    background: var(--paper);
+  }
+  body[data-theme="charcoal"] .balls-viz{
+    background: linear-gradient(180deg, var(--paper), #1F1B17);
+  }
+  body[data-theme="charcoal"] .actions{
+    background: rgba(38,34,30,.96);
+  }
+  body[data-theme="charcoal"] .notice{
+    background: oklch(0.24 0.04 60); color: oklch(0.85 0.1 60);
+    border-color: oklch(0.35 0.06 60);
+  }
+
+  body[data-theme="basil"]{
+    --bg:#EDF1E8; --paper:#F7FAEF; --bg-2:#E5EBDC; --ink:#1B2218;
+    --accent: oklch(0.55 0.14 145); --accent-ink: oklch(0.4 0.14 145);
+  }
+
+  body[data-theme="ink"]{
+    --bg:#E8E6E1; --paper:#F4F2EC; --bg-2:#DCDAD3; --ink:#15140F;
+    --accent: oklch(0.5 0.18 260); --accent-ink: oklch(0.36 0.18 260);
+  }
+
+  /* Density variants */
+  body[data-density="compact"] .field{ padding: 12px 18px; }
+  body[data-density="compact"] .stepper{ height: 48px; }
+  body[data-density="compact"] .stepper button{ width: 44px; font-size: 18px; }
+  body[data-density="compact"] .result-card{ padding: 14px; }
+  body[data-density="compact"] .line .num{ font-size: 19px; }
+  body[data-density="compact"] .hero h1{ font-size: clamp(40px, 9vw, 92px); }
+
   /* Reduce motion */
   @media (prefers-reduced-motion: reduce){
     *{ transition: none !important; animation: none !important; }
   }
 </style>
 </head>
-<body>
+<body data-theme="terracotta" data-density="cozy">
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <span class="dot" aria-hidden="true"></span>
-        <span>Pizza Dough Calculator</span>
-      </div>
-      <div class="meta">
-        <span class="pill"><span class="swatch"></span> Poolish &middot; 100% hydration</span>
+        <img class="brand-mark" src="assets/logo.png" alt="" aria-hidden="true" data-comment-anchor="c031d71abd-img">
+        <span data-comment-anchor="b40d892c6a-span">Pizza Dough Calculator</span>
       </div>
     </header>
 
-    <section class="hero">
-      <h1>
-        Pizza dough, <em>calculated</em>.
-      </h1>
-      <p class="lede">
-        Dial in batch size, hydration, poolish weight, and salt. The totals stay tied
-        to the final dough &mdash; with a 100% hydration poolish split out from the
-        final mix.
-      </p>
-    </section>
+    <section class="hero" data-comment-anchor="e4959b3a2f-section" hidden></section>
 
     <!-- Composition visualization -->
     <section class="composition" aria-label="Recipe composition">
       <div class="comp-head">
-        <span>Composition &middot; baker&rsquo;s percentage</span>
+        <span>Composition · baker's percentage</span>
         <span class="target">target <b id="targetReadout">1000g</b></span>
       </div>
       <div class="bar" id="compBar" role="img" aria-label="Stacked bar of flour, water, and salt by weight">
@@ -670,7 +819,7 @@
 
         <div class="balls-viz" id="ballsViz" aria-hidden="true">
           <div class="balls-row" id="ballsRow"></div>
-          <div class="meta" id="ballsMeta">4 &times; 250g</div>
+          <div class="meta" id="ballsMeta">4 × 250g</div>
         </div>
 
         <div class="controls">
@@ -701,7 +850,7 @@
                   <span class="unit">quantity</span>
                 </div>
                 <div class="stepper">
-                  <button type="button" data-step="balls" data-dir="-1" aria-label="Fewer balls">&minus;</button>
+                  <button type="button" data-step="balls" data-dir="-1" aria-label="Fewer balls">−</button>
                   <input id="balls" type="number" inputmode="numeric" min="1" step="1" value="4">
                   <button type="button" data-step="balls" data-dir="1" aria-label="More balls">+</button>
                 </div>
@@ -712,8 +861,8 @@
                   <span class="unit">grams each</span>
                 </div>
                 <div class="stepper">
-                  <button type="button" data-step="ballWeight" data-dir="-5" aria-label="Lighter">&minus;</button>
-                  <input id="ballWeight" type="number" inputmode="decimal" min="1" step="5" value="250">
+                  <button type="button" data-step="ballWeight" data-dir="-5" aria-label="Lighter">−</button>
+                  <input id="ballWeight" type="number" inputmode="decimal" min="1" step="5" value="250" data-comment-anchor="1dd4a6c677-input">
                   <button type="button" data-step="ballWeight" data-dir="5" aria-label="Heavier">+</button>
                 </div>
               </div>
@@ -727,7 +876,7 @@
               <span class="unit">grams</span>
             </div>
             <div class="stepper">
-              <button type="button" data-step="totalWeight" data-dir="-50" aria-label="Less">&minus;</button>
+              <button type="button" data-step="totalWeight" data-dir="-50" aria-label="Less">−</button>
               <input id="totalWeight" type="number" inputmode="decimal" min="1" step="50" value="1000">
               <button type="button" data-step="totalWeight" data-dir="50" aria-label="More">+</button>
             </div>
@@ -743,10 +892,10 @@
               <input id="hydration" type="range" class="slider" min="40" max="100" step="0.5" value="65">
             </div>
             <div class="tick-row">
-              <button type="button" data-set="hydration" data-val="55">55 &middot; NY</button>
-              <button type="button" data-set="hydration" data-val="62">62 &middot; Roma</button>
-              <button type="button" data-set="hydration" data-val="65">65 &middot; Napoli</button>
-              <button type="button" data-set="hydration" data-val="75">75 &middot; Pala</button>
+              <button type="button" data-set="hydration" data-val="55">55 · NY</button>
+              <button type="button" data-set="hydration" data-val="62">62 · Roma</button>
+              <button type="button" data-set="hydration" data-val="65">65 · Napoli</button>
+              <button type="button" data-set="hydration" data-val="75">75 · Pala</button>
             </div>
           </div>
 
@@ -754,10 +903,10 @@
           <div class="field">
             <div class="field-head">
               <span class="label">Poolish</span>
-              <span class="unit">grams &middot; 100% hydration</span>
+              <span class="unit">grams · 100% hydration</span>
             </div>
             <div class="stepper">
-              <button type="button" data-step="poolish" data-dir="-10" aria-label="Less poolish">&minus;</button>
+              <button type="button" data-step="poolish" data-dir="-10" aria-label="Less poolish">−</button>
               <input id="poolish" type="number" inputmode="decimal" min="0" step="10" value="200">
               <button type="button" data-step="poolish" data-dir="10" aria-label="More poolish">+</button>
             </div>
@@ -818,7 +967,7 @@
           <div class="result-card">
             <div class="head">
               <span class="name">Poolish</span>
-              <span class="tag">make 12&ndash;16h ahead</span>
+              <span class="tag">make 12–16h ahead</span>
             </div>
             <div class="lines">
               <div class="line"><span class="lbl">Flour</span><span class="num" id="poolishFlour" data-target="100">100g</span></div>
@@ -856,7 +1005,7 @@
 
         <p class="footnote">
           Because the poolish is 100% hydration, half of its weight counts as flour and half
-          as water. Yeast suggestion is for a 12&ndash;16h cool ferment &mdash; adjust to room temperature.
+          as water. Yeast suggestion is for a 12–16h cool ferment — adjust to room temperature.
         </p>
       </section>
     </div>
@@ -873,6 +1022,39 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
       Copy link
     </button>
+  </div>
+
+  <!-- Tweaks fab + panel (toggled via toolbar) -->
+  <button class="tweak-fab" id="tweakFab" aria-label="Open tweaks" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
+
+  <div class="tweaks" id="tweaksPanel" role="dialog" aria-label="Tweaks">
+    <button class="close" id="tweaksClose" aria-label="Close tweaks">✕</button>
+    <h4>Tweaks</h4>
+    <div class="row">
+      <span class="lab">Theme</span>
+      <div class="swatches" id="themeSwatches">
+        <button data-theme="terracotta" title="Terracotta" style="background:linear-gradient(135deg,#F1EAE0 0 50%, oklch(0.62 0.18 28) 50% 100%)"></button>
+        <button data-theme="basil" title="Basil" style="background:linear-gradient(135deg,#EDF1E8 0 50%, oklch(0.55 0.14 145) 50% 100%)"></button>
+        <button data-theme="ink" title="Ink" style="background:linear-gradient(135deg,#E8E6E1 0 50%, oklch(0.5 0.18 260) 50% 100%)"></button>
+        <button data-theme="charcoal" title="Charcoal" style="background:linear-gradient(135deg,#1C1A18 0 50%, oklch(0.7 0.16 28) 50% 100%)"></button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="lab">Density</span>
+      <div class="options" id="densityOpts">
+        <button data-density="cozy" class="active">Cozy</button>
+        <button data-density="compact">Compact</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="lab">Slider style</span>
+      <div class="options" id="sliderOpts">
+        <button data-thumb="dot" class="active">Dot</button>
+        <button data-thumb="bar">Bar</button>
+      </div>
+    </div>
   </div>
 
   <div class="toast" id="toast">Link copied</div>
@@ -932,6 +1114,8 @@ function applyUrlParams(){
     const v = p.get(q);
     if (v !== null) fields[k].value = v;
   });
+  const t = p.get("theme");
+  if (t) document.body.dataset.theme = t;
 }
 function buildUrl(){
   const u = new URL(location.href);
@@ -941,6 +1125,9 @@ function buildUrl(){
     const v = String(fields[k].value).trim();
     if (v !== "") p.set(q, v);
   });
+  if (document.body.dataset.theme && document.body.dataset.theme !== "terracotta"){
+    p.set("theme", document.body.dataset.theme);
+  }
   u.search = p.toString();
   u.hash = "";
   return u.toString();
@@ -994,6 +1181,7 @@ function paintBalls(n, weight){
   const cap = 24;
   const sizeClass = n > 16 ? "xs" : n > 9 ? "small" : "";
   const count = Math.min(cap, Math.max(0, n));
+  // diff-only rendering would be nice, but redraw is fine and triggers entrance anim
   ballsRow.innerHTML = "";
   for (let i = 0; i < count; i++){
     const b = document.createElement("span");
@@ -1025,6 +1213,9 @@ function updateBatchControls(syncTotalFromBalls = false){
   const usingBalls = mode === "balls";
   ballsControls.forEach(c => c.hidden = !usingBalls);
   totalControls.forEach(c => c.hidden = usingBalls);
+  // hide the dough-balls illustration tile when totalling directly
+  const ballsViz = document.getElementById("ballsViz");
+  if (ballsViz) ballsViz.hidden = !usingBalls;
   if (!usingBalls && syncTotalFromBalls){
     const b = num(fields.balls.value), w = num(fields.ballWeight.value);
     if (b > 0 && w > 0) fields.totalWeight.value = Math.round(b * w);
@@ -1152,6 +1343,7 @@ document.querySelectorAll("[data-step]").forEach(btn => {
     const min = input.min !== "" ? parseFloat(input.min) : -Infinity;
     let next = cur + dir;
     if (next < min) next = min;
+    // keep integers integer
     if (input.step === "1") next = Math.round(next);
     input.value = next;
     input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -1201,11 +1393,61 @@ function flashToast(text){
   flashToast._t = setTimeout(() => toast.classList.remove("show"), 1600);
 }
 
+/* ───────── Tweaks panel ───────── */
+const tweakFab = document.getElementById("tweakFab");
+const tweaksPanel = document.getElementById("tweaksPanel");
+const tweaksClose = document.getElementById("tweaksClose");
+
+function activateTweaks(){ tweaksPanel.classList.add("open"); tweakFab.classList.add("visible"); }
+function deactivateTweaks(){
+  tweaksPanel.classList.remove("open");
+  window.parent && window.parent.postMessage({type: '__edit_mode_dismissed'}, '*');
+}
+window.addEventListener("message", e => {
+  if (!e.data) return;
+  if (e.data.type === "__activate_edit_mode") activateTweaks();
+  if (e.data.type === "__deactivate_edit_mode") deactivateTweaks();
+});
+window.parent && window.parent.postMessage({type: '__edit_mode_available'}, '*');
+
+tweakFab.addEventListener("click", () => tweaksPanel.classList.toggle("open"));
+tweaksClose.addEventListener("click", deactivateTweaks);
+
+function syncSwatches(){
+  document.querySelectorAll("#themeSwatches button").forEach(b => {
+    b.classList.toggle("active", b.dataset.theme === document.body.dataset.theme);
+  });
+  document.querySelectorAll("#densityOpts button").forEach(b => {
+    b.classList.toggle("active", b.dataset.density === document.body.dataset.density);
+  });
+}
+document.querySelectorAll("#themeSwatches button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.body.dataset.theme = b.dataset.theme;
+    syncSwatches();
+    updateUrl();
+  });
+});
+document.querySelectorAll("#densityOpts button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.body.dataset.density = b.dataset.density;
+    syncSwatches();
+  });
+});
+document.querySelectorAll("#sliderOpts button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#sliderOpts button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    document.documentElement.style.setProperty("--thumb-shape", b.dataset.thumb);
+  });
+});
+
 /* ───────── Init ───────── */
 applyUrlParams();
 updateBatchControls();
 calculate();
 updateUrl();
+syncSwatches();
 </script>
 </body>
 </html>
