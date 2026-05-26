@@ -195,6 +195,7 @@
     box-shadow: inset 0 0 0 1px var(--rule);
   }
   .bar .seg{
+    position: relative;
     height:100%;
     display:flex; align-items:center; justify-content:center;
     color:#fff; font-weight:600; font-size: 12.5px;
@@ -209,8 +210,28 @@
   .bar .seg.salt { background: linear-gradient(180deg, #2b2620, #1F1A15); }
   .bar .seg .lbl{ font-family:"Geist Mono", ui-monospace, monospace; font-size:11px; opacity:.92; }
   .bar .seg .val{ font-family:"Geist Mono", ui-monospace, monospace; font-size:12.5px; margin-left:8px; }
-  .bar .seg-text{ display:flex; align-items:baseline; gap:6px; padding: 0 10px; }
+  .bar .seg-text{ position:relative; z-index:1; display:flex; align-items:baseline; gap:6px; padding: 0 10px; }
   .bar .seg.salt .seg-text{ padding: 0 6px; }
+
+  .bar .seg-poolish{
+    position:absolute;
+    top:0; left:0;
+    height:100%;
+    width:0;
+    pointer-events:none;
+    transition: width var(--t);
+    border-right: 1px solid rgba(0,0,0,.18);
+  }
+  .bar .seg.flour .seg-poolish{
+    background:
+      repeating-linear-gradient(135deg, rgba(58,43,22,.18) 0 5px, rgba(58,43,22,0) 5px 10px),
+      linear-gradient(180deg, #D6B374, #BE9550);
+  }
+  .bar .seg.water .seg-poolish{
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.16) 0 5px, rgba(255,255,255,0) 5px 10px),
+      linear-gradient(180deg, #4F8DB3, #335F80);
+  }
 
   .legend{
     display:flex; flex-wrap:wrap; gap: 14px 22px;
@@ -222,7 +243,15 @@
   .legend .key.flour{ background:#D9B36A; }
   .legend .key.water{ background:#4F8DB3; }
   .legend .key.salt{ background:#1F1A15; }
+  .legend .key.poolish{
+    width:18px; height:12px; border-radius: 3px;
+    background:
+      repeating-linear-gradient(135deg, rgba(58,43,22,.22) 0 4px, rgba(58,43,22,0) 4px 8px),
+      linear-gradient(90deg, #BE9550 0 50%, #335F80 50% 100%);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
+  }
   .legend .item b{ font-family:"Geist Mono", ui-monospace, monospace; font-weight:500; color: var(--ink); }
+  .legend .hint{ color: var(--muted); font-size: 12px; }
 
   /* ───────── Sections layout ───────── */
   .grid{
@@ -846,11 +875,13 @@
         <span>Composition · baker's percentage</span>
         <span class="target">target <b id="targetReadout">1000g</b></span>
       </div>
-      <div class="bar" id="compBar" role="img" aria-label="Stacked bar of flour, water, and salt by weight">
+      <div class="bar" id="compBar" role="img" aria-label="Stacked bar of flour, water, and salt by weight; shaded portions show poolish flour and water">
         <div class="seg flour" style="flex-basis:60%">
+          <div class="seg-poolish" id="poolFlourBar" aria-hidden="true"></div>
           <span class="seg-text"><span class="lbl">Flour</span><span class="val" id="segFlour">597g</span></span>
         </div>
         <div class="seg water" style="flex-basis:38%">
+          <div class="seg-poolish" id="poolWaterBar" aria-hidden="true"></div>
           <span class="seg-text"><span class="lbl">Water</span><span class="val" id="segWater">388g</span></span>
         </div>
         <div class="seg salt" style="flex-basis:2%">
@@ -861,7 +892,11 @@
         <div class="item"><span class="key flour"></span> Flour <b id="legendFlour">597g</b></div>
         <div class="item"><span class="key water"></span> Water <b id="legendWater">388g</b></div>
         <div class="item"><span class="key salt"></span> Salt <b id="legendSalt">15g</b></div>
-        <div class="item" style="margin-left:auto"><span class="key" style="background: var(--sage); border-radius:50%"></span> Poolish <b id="legendPoolish">200g</b></div>
+        <div class="item" style="margin-left:auto">
+          <span class="key poolish" aria-hidden="true"></span>
+          Poolish <b id="legendPoolish">200g</b>
+          <span class="hint">— striped portion of flour &amp; water bars</span>
+        </div>
       </div>
     </section>
 
@@ -1241,7 +1276,10 @@ const segSalt  = document.getElementById("segSalt");
 const compBar  = document.getElementById("compBar");
 const segs = compBar.querySelectorAll(".seg");
 
-function paintBar(flour, water, salt){
+const poolFlourBar = document.getElementById("poolFlourBar");
+const poolWaterBar = document.getElementById("poolWaterBar");
+
+function paintBar(flour, water, salt, poolFlour = 0, poolWater = 0){
   const total = Math.max(1, flour + water + salt);
   const fp = flour / total * 100;
   const wp = water / total * 100;
@@ -1252,6 +1290,11 @@ function paintBar(flour, water, salt){
   segFlour.textContent = fmt(flour);
   segWater.textContent = fmt(water);
   segSalt.textContent  = fmt(salt);
+
+  const pfPct = flour > 0 ? Math.max(0, Math.min(100, poolFlour / flour * 100)) : 0;
+  const pwPct = water > 0 ? Math.max(0, Math.min(100, poolWater / water * 100)) : 0;
+  poolFlourBar.style.width = pfPct + "%";
+  poolWaterBar.style.width = pwPct + "%";
 }
 
 /* ───────── Balls illustration ───────── */
@@ -1402,7 +1445,7 @@ function calculate(){
   document.getElementById("legendSalt").textContent  = fmt(salt);
   document.getElementById("legendPoolish").textContent = fmt(pool);
 
-  paintBar(totalFlour, totalWater, salt);
+  paintBar(totalFlour, totalWater, salt, poolFlour, poolWater);
   paintBalls(Math.max(1, Math.round(balls)), bw);
 
   // sync slider readouts
