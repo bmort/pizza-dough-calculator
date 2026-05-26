@@ -1,6 +1,6 @@
 # 🍕 Pizza Dough Calculator
 
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20site-2f704d?logo=github)](https://bmort.github.io/pizza-dough-calculator/)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20site-2f704d?logo=github)](https://bmort.github.io/pizza/)
 
 <img src="assets/logo.png" alt="Pizza Dough Calculator logo" width="33%">
 
