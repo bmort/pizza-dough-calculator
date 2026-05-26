@@ -2,9 +2,9 @@
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20site-2f704d?logo=github)](https://bmort.github.io/pizza/)
 
-<img src="assets/logo.png" alt="Pizza Dough Calculator logo" width="33%">
+<img src="pizza/assets/logo.png" alt="Pizza Dough Calculator logo" width="33%">
 
-A small static website for calculating pizza dough ingredient weights. It is built as a single `index.html` file, so it can be hosted directly with GitHub Pages without any build step.
+A small static website for calculating pizza dough ingredient weights. It is built as a single `pizza/index.html` file, so it can be hosted directly with GitHub Pages without any build step. The repository root contains a lightweight `index.html` that redirects to `pizza/`.
 
 ## ✨ Features
 
@@ -42,10 +42,10 @@ If the poolish is too large for the selected dough size or hydration, the calcul
 
 ## 🖥️ Run Locally
 
-Open `index.html` directly in a browser:
+Open `pizza/index.html` directly in a browser:
 
 ```text
-file:///path/to/pizza_dough_calculator/index.html
+file:///path/to/pizza_dough_calculator/pizza/index.html
 ```
 
 No package install or local server is required.
