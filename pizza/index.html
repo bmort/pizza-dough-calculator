@@ -1404,6 +1404,7 @@ function calculate(){
     if (!(balls > 0)) return showMessage("Enter at least one dough ball."), clearOutputs();
     if (!(bw > 0))    return showMessage("Ball weight must be greater than 0g."), clearOutputs();
     target = balls * bw;
+    paintBalls(Math.max(1, Math.round(balls)), bw);
   } else {
     if (!(tw > 0))    return showMessage("Total dough weight must be greater than 0g."), clearOutputs();
     target = tw;
@@ -1484,7 +1485,6 @@ function calculate(){
   document.getElementById("legendPoolish").textContent = fmt(pool);
 
   paintBar(totalFlour, totalWater, salt, poolFlour, poolWater);
-  paintBalls(Math.max(1, Math.round(balls)), bw);
 
   // sync slider readouts
   document.getElementById("hydrationValue").textContent = (+fields.hydration.value).toFixed(fields.hydration.value % 1 ? 1 : 0) + "%";
